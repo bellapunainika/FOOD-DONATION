@@ -85,7 +85,10 @@ export default function Onboarding() {
     }
   };
 
-  if (!userProfile) return null;
+  if (!userProfile) {
+    navigate('/register');
+    return null;
+  }
 
   return (
     <div className="min-h-[80vh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
