@@ -25,9 +25,10 @@ export default function VolunteerDashboard() {
   const [availablePickups, setAvailablePickups] = useState<FoodDonation[]>([]);
   const [activeDeliveries, setActiveDeliveries] = useState<FoodDonation[]>([]);
   const [delivered, setDelivered] = useState<FoodDonation[]>([]);
+  const [previousActiveCount, setPreviousActiveCount] = useState<number>(0);
 
   useEffect(() => {
-    // Donations reserved by NGO but not yet picked up by any volunteer
+    // Donations reserved by organizations but not yet picked up by any volunteer
     const qPickups = query(collection(db, 'donations'), where('status', '==', 'reserved'));
     const unsubPickups = onSnapshot(qPickups, (snapshot) => {
       const docs: FoodDonation[] = [];
@@ -49,6 +50,12 @@ export default function VolunteerDashboard() {
             if (data.status === 'delivered') pastDocs.push(data);
             else activeDocs.push(data);
         });
+        
+        // Detect if an active delivery was removed
+        if (previousActiveCount > activeDocs.length && previousActiveCount > 0) {
+          toast.error('A donation pickup was cancelled by the donor!');
+        }
+        setPreviousActiveCount(activeDocs.length);
         setActiveDeliveries(activeDocs);
         setDelivered(pastDocs);
       });
@@ -58,13 +65,16 @@ export default function VolunteerDashboard() {
         unsubActive();
       };
     }
-  }, [userProfile]);
+  }, [userProfile, previousActiveCount]);
 
   const acceptPickup = async (donationId: string) => {
       if (!userProfile) return;
       try {
           await updateDoc(doc(db, 'donations', donationId), {
               volunteerId: userProfile.uid,
+              volunteerName: userProfile.fullName,
+              volunteerEmail: userProfile.email,
+              volunteerPhone: userProfile.phoneNumber
           });
           toast.success("Delivery accepted! Please proceed to pickup location.");
       } catch(err: any) {
@@ -89,7 +99,7 @@ export default function VolunteerDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h2 className="text-3xl font-bold leading-7 text-gray-900">Volunteer Logistics</h2>
-        <p className="mt-1 text-gray-500">Pick up ready donations and deliver them safely to the assigned NGOs.</p>
+        <p className="mt-1 text-gray-500">Pick up ready donations and deliver them safely to the assigned organization.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8 text-center text-white">
@@ -122,7 +132,10 @@ export default function VolunteerDashboard() {
                        <Marker key={don.id} position={[don.location.lat, don.location.lng]} icon={pickupIcon}>
                           <Popup>
                              <strong>{don.donorName}</strong><br/>
+                             {don.donorEmail && <>📧 {don.donorEmail}<br/></>}
+                             {don.donorPhone && <>📱 {don.donorPhone}<br/></>}
                              {don.quantityInMeals} Meals<br/>
+                             {don.organizationName && <>Org: {don.organizationName}<br/></>}
                              <button onClick={() => don.id && acceptPickup(don.id)} className="w-full mt-2 text-xs bg-brand-600 text-white rounded p-1">Accept</button>
                           </Popup>
                        </Marker>
@@ -136,15 +149,30 @@ export default function VolunteerDashboard() {
                  {availablePickups.length === 0 && <p className="text-gray-500">No pickups available currently.</p>}
                  <div className="space-y-4">
                      {availablePickups.map(don => (
-                        <div key={don.id} className="flex flex-col sm:flex-row justify-between bg-gray-50 border border-gray-200 rounded-xl p-4">
-                           <div>
+                        <div key={don.id} className="flex flex-col sm:flex-row justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 gap-4">
+                           <div className="flex-1">
                                <div className="font-bold text-lg text-gray-900">{don.donorName}</div>
-                               <div className="text-sm text-gray-600">Quantity: {don.quantityInMeals} Meals | Ready since {new Date(don.preparedTime).toLocaleTimeString()}</div>
+                               <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
+                               <div className="text-sm text-gray-600">
+                                 {don.donorEmail && <p>📧 {don.donorEmail}</p>}
+                                 {don.donorPhone && <p>📱 {don.donorPhone}</p>}
+                               </div>
+                               {don.organizationName && (
+                                 <>
+                                   <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Organization:</div>
+                                   <div className="text-sm text-gray-600">
+                                     <p className="font-semibold">{don.organizationName}</p>
+                                     {don.organizationEmail && <p>📧 {don.organizationEmail}</p>}
+                                     {don.organizationPhone && <p>📱 {don.organizationPhone}</p>}
+                                   </div>
+                                 </>
+                               )}
+                               <div className="text-sm text-gray-600 mt-2">Quantity: {don.quantityInMeals} Meals | Ready since {new Date(don.preparedTime).toLocaleTimeString()}</div>
                                <div className="text-sm text-gray-500 mt-1 flex gap-2 items-center">
                                   <Navigation size={14}/> {don.location.address}
                                </div>
                            </div>
-                           <button onClick={() => don.id && acceptPickup(don.id)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-sm transition">
+                           <button onClick={() => don.id && acceptPickup(don.id)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-sm transition whitespace-nowrap h-fit">
                                Accept Delivery
                            </button>
                         </div>
@@ -162,6 +190,21 @@ export default function VolunteerDashboard() {
                   {activeDeliveries.map(d => (
                      <div key={d.id} className="p-4 border border-blue-200 bg-blue-50 rounded-xl shadow-sm">
                          <div className="font-bold text-lg">{d.donorName}</div>
+                         <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
+                         <div className="text-sm text-gray-600 mb-2">
+                           {d.donorEmail && <p>📧 {d.donorEmail}</p>}
+                           {d.donorPhone && <p>📱 {d.donorPhone}</p>}
+                         </div>
+                         {d.organizationName && (
+                           <>
+                             <div className="text-xs uppercase text-gray-500 font-semibold">Receiving Organization:</div>
+                             <div className="text-sm text-gray-600 mb-2">
+                               <p className="font-semibold">{d.organizationName}</p>
+                               {d.organizationEmail && <p>📧 {d.organizationEmail}</p>}
+                               {d.organizationPhone && <p>📱 {d.organizationPhone}</p>}
+                             </div>
+                           </>
+                         )}
                          <div className="text-sm text-gray-600 mb-4">{d.quantityInMeals} Meals</div>
 
                          <div className="space-y-2">
@@ -172,7 +215,7 @@ export default function VolunteerDashboard() {
                             )}
                             {d.status === 'picked_up' && (
                                 <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition">
-                                   <Check size={18} /> Mark as Delivered to NGO
+                                   <Check size={18} /> Mark as Delivered to organizations
                                 </button>
                             )}
                          </div>

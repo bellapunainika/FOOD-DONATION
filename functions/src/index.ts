@@ -30,7 +30,7 @@ export const askChatbot = functions.https.onCall({ cors: true, region: location 
       }
     });
 
-    const prompt = `You are the AI customer service chatbot for 'AI ENABLED FEED HUNGER', a platform connecting donors (restaurants/events), NGOs, and volunteers to reduce food waste. 
+    const prompt = `You are the AI customer service chatbot for 'AI ENABLED FEED HUNGER', a platform connecting donors (restaurants/events), organizationss, and volunteers to reduce food waste. 
 User asks: ${message}
 Respond helpfully.`;
 
@@ -43,15 +43,15 @@ Respond helpfully.`;
     console.error("Vertex AI Error:", error);
     
     // Fallback response for un-configured environments during eval Demo
-    let demoResponse = "I'm the AI assistant for Feed Hunger. I can answer questions about donations, navigation, or NGO sign-up!";
+    let demoResponse = "I'm the AI assistant for Feed Hunger. I can answer questions about donations, navigation, or organizations sign-up!";
     const msg = message.toLowerCase();
     
     if (msg.includes('donate')) {
        demoResponse = "To donate food, log in as a Donor, go to your Dashboard, and click '+ Add Food Donation'. Be sure to list the expiry time!";
     } else if (msg.includes('volunteer') || msg.includes('delivery')) {
-       demoResponse = "Volunteers can view active pickups directly on their map dashboard. Simply accept a delivery, pick it up, and drop it at the NGO.";
-    } else if (msg.includes('ngo')) {
-       demoResponse = "NGOs can view real-time maps of nearby surplus food and allocate it instantly to active volunteers in the area.";
+       demoResponse = "Volunteers can view active pickups directly on their map dashboard. Simply accept a delivery, pick it up, and drop it at the organizations.";
+    } else if (msg.includes('organizations')) {
+       demoResponse = "organizationss can view real-time maps of nearby surplus food and allocate it instantly to active volunteers in the area.";
     }
     
     return { 

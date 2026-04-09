@@ -1,4 +1,4 @@
-export type UserRole = 'donor' | 'ngo' | 'volunteer';
+export type UserRole = 'donor' | 'organizations' | 'volunteer';
 
 export interface LocationData {
   address: string;
@@ -14,7 +14,7 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   fullName?: string;
-  organizationName?: string; // For Donors & NGOs
+  organizationName?: string; // For Donors & organizationss
   phoneNumber?: string;
   location?: LocationData;
   idProofUrl?: string;
@@ -23,8 +23,8 @@ export interface UserProfile {
   
   // Specific fields
   donorType?: 'Individual' | 'Restaurant' | 'Catering Service' | 'Event';
-  ngoRegNumber?: string;
-  ngoType?: 'NGO' | 'Volunteer Group' | 'Individual Volunteer';
+  organizationsRegNumber?: string;
+  organizationsType?: 'organizations' | 'Volunteer Group' | 'Individual Volunteer';
   capacityMealsPerDay?: number;
   availableVehicles?: boolean;
 }
@@ -33,6 +33,8 @@ export interface FoodDonation {
   id?: string;
   donorId: string;
   donorName: string;
+  donorEmail?: string;
+  donorPhone?: string;
   status: 'available' | 'reserved' | 'picked_up' | 'delivered';
   foodCategory: 'Veg' | 'Non-Veg' | 'Both';
   foodType: 'Cooked' | 'Packaged' | 'Raw Ingredients';
@@ -48,19 +50,25 @@ export interface FoodDonation {
   };
   foodImageUrl?: string;
   specialInstructions?: string;
+  // Organization details (when accepted by an organization)
+  reservedByorganizationsId?: string;
+  organizationName?: string;
+  organizationEmail?: string;
+  organizationPhone?: string;
+  // Volunteer details (when accepted by a volunteer)
+  volunteerId?: string;
+  volunteerName?: string;
+  volunteerEmail?: string;
+  volunteerPhone?: string;
   location: LocationData;
   createdAt: number;
-  
-  // Link to NGO and Volunteer
-  reservedByNgoId?: string;
-  volunteerId?: string;
 }
 
 export interface DeliveryJob {
   id?: string;
   donationId: string;
   donorId: string;
-  ngoId: string;
+  organizationsId: string;
   volunteerId?: string;
   status: 'pending_volunteer' | 'assigned' | 'in_transit' | 'delivered';
   pickupLocation: LocationData;

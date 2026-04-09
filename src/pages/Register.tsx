@@ -199,15 +199,15 @@ export default function Register() {
 
           <button
             type="button"
-            onClick={() => setRole('ngo')}
+            onClick={() => setRole('organizations')}
             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
-              role === 'ngo' 
+              role === 'organizations' 
                 ? 'border-brand-500 bg-brand-50 text-brand-700 shadow-md ring-2 ring-brand-500 ring-offset-2' 
                 : 'border-gray-200 hover:border-brand-300 hover:bg-brand-50/50 text-gray-600'
             }`}
           >
-            <Heart className={`w-8 h-8 mb-2 ${role === 'ngo' ? 'text-brand-600' : 'text-gray-400'}`} />
-            <span className="font-bold">NGO</span>
+            <Heart className={`w-8 h-8 mb-2 ${role === 'organizations' ? 'text-brand-600' : 'text-gray-400'}`} />
+            <span className="font-bold">organizations</span>
             <span className="text-xs text-center mt-1 opacity-80">Organizations</span>
           </button>
 

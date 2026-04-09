@@ -135,10 +135,10 @@ export default function Navbar() {
                               {userProfile.donorType}
                             </div>
                           )}
-                          {userProfile?.ngoRegNumber && (
+                          {userProfile?.organizationsRegNumber && (
                             <div>
-                              <span className="font-semibold text-gray-900">NGO Reg:</span>{' '}
-                              {userProfile.ngoRegNumber}
+                              <span className="font-semibold text-gray-900">organizations Reg:</span>{' '}
+                              {userProfile.organizationsRegNumber}
                             </div>
                           )}
                         </div>
