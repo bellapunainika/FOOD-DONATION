@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import DonorDashboard from './dashboards/DonorDashboard';
-import NGODashboard from './dashboards/NGODashboard';
+import OrganizationsDashboard from './dashboards/OrganizationsDashboard';
 import VolunteerDashboard from './dashboards/VolunteerDashboard';
 
 export default function Dashboard() {
@@ -12,8 +12,8 @@ export default function Dashboard() {
   switch (userProfile.role) {
     case 'donor':
       return <DonorDashboard />;
-    case 'ngo':
-      return <NGODashboard />;
+    case 'organizations':
+      return <OrganizationsDashboard />;
     case 'volunteer':
       return <VolunteerDashboard />;
     default:

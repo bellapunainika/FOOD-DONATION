@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
-import { Clock, AlertCircle, CheckCircle, Package } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, Package, Trash2 } from 'lucide-react';
 
 export default function DonorDashboard() {
   const { userProfile } = useAuth();
@@ -44,6 +44,8 @@ export default function DonorDashboard() {
       const newDonation: Omit<FoodDonation, 'id'> = {
         donorId: userProfile.uid,
         donorName: userProfile.organizationName || userProfile.fullName || 'Anonymous Donor',
+        donorEmail: userProfile.email,
+        donorPhone: userProfile.phoneNumber,
         status: 'available',
         foodCategory,
         foodType,
@@ -75,6 +77,22 @@ export default function DonorDashboard() {
   };
 
   const totalMealsDonated = donations.filter(d => d.status === 'delivered').reduce((acc, curr) => acc + curr.quantityInMeals, 0);
+
+  const handleDeleteDonation = async (donationId: string, donationStatus: string) => {
+    if (!donationId) return;
+    try {
+      await deleteDoc(doc(db, 'donations', donationId));
+      if (donationStatus === 'available') {
+        toast.success('Donation removed successfully!');
+      } else if (donationStatus === 'reserved') {
+        toast.success('Donation taken back! Organizations have been notified.');
+      } else {
+        toast.success('Donation removed from records.');
+      }
+    } catch (error: any) {
+      toast.error('Failed to delete donation: ' + error.message);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -129,13 +147,24 @@ export default function DonorDashboard() {
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-4">
                         <p className="text-xl font-bold text-gray-900 truncate">
                           {donation.quantityInMeals} Meals ({donation.foodType} - {donation.foodCategory})
                         </p>
-                        <div className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${urgency.border} ${urgency.color} items-center gap-1`}>
-                          <UrgencyIcon size={14} />
-                          {urgency.name} Urgency
+                        <div className="flex items-center gap-2">
+                          <div className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${urgency.border} ${urgency.color} items-center gap-1`}>
+                            <UrgencyIcon size={14} />
+                            {urgency.name} Urgency
+                          </div>
+                          {donation.status === 'available' && (
+                            <button
+                              onClick={() => donation.id && handleDeleteDonation(donation.id, donation.status)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Delete donation"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div className="mt-2 flex">
@@ -154,6 +183,34 @@ export default function DonorDashboard() {
                             return `${hoursLeft} hour(s)`;
                           })()}
                         </div>
+                      )}
+                      {donation.status !== 'available' && (
+                        <>
+                          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {donation.organizationName && (
+                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-xs font-semibold text-blue-700 uppercase">Organization</p>
+                                <p className="font-bold text-gray-900 mt-1">{donation.organizationName}</p>
+                                {donation.organizationEmail && <p className="text-sm text-gray-600">📧 {donation.organizationEmail}</p>}
+                                {donation.organizationPhone && <p className="text-sm text-gray-600">📱 {donation.organizationPhone}</p>}
+                              </div>
+                            )}
+                            {donation.volunteerName && (
+                              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <p className="text-xs font-semibold text-green-700 uppercase">Volunteer</p>
+                                <p className="font-bold text-gray-900 mt-1">{donation.volunteerName}</p>
+                                {donation.volunteerEmail && <p className="text-sm text-gray-600">📧 {donation.volunteerEmail}</p>}
+                                {donation.volunteerPhone && <p className="text-sm text-gray-600">📱 {donation.volunteerPhone}</p>}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => donation.id && handleDeleteDonation(donation.id, donation.status)}
+                            className="mt-4 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition border border-red-200"
+                          >
+                            <Trash2 className="inline mr-2" size={16} /> Take Back
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

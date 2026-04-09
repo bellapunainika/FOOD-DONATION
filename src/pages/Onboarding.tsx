@@ -19,7 +19,7 @@ export default function Onboarding() {
   
   // Specific
   const [donorType, setDonorType] = useState<'Individual' | 'Restaurant' | 'Catering Service' | 'Event'>(userProfile?.donorType || 'Restaurant');
-  const [ngoReg, setNgoReg] = useState(userProfile?.ngoRegNumber || '');
+  const [organizationsReg, setorganizationsReg] = useState(userProfile?.organizationsRegNumber || '');
 
   useEffect(() => {
     if (!userProfile) return;
@@ -29,7 +29,7 @@ export default function Onboarding() {
     setAddress(userProfile.location?.address || '');
     setCity(userProfile.location?.city || '');
     setDonorType((userProfile.donorType || 'Restaurant') as 'Individual' | 'Restaurant' | 'Catering Service' | 'Event');
-    setNgoReg(userProfile.ngoRegNumber || '');
+    setorganizationsReg(userProfile.organizationsRegNumber || '');
   }, [userProfile]);
 
   const getLocation = () => {
@@ -69,8 +69,8 @@ export default function Onboarding() {
       if (userProfile?.role === 'donor') {
         updateData.donorType = donorType;
         updateData.organizationName = fullName;
-      } else if (userProfile?.role === 'ngo') {
-        updateData.ngoRegNumber = ngoReg;
+      } else if (userProfile?.role === 'organizations') {
+        updateData.organizationsRegNumber = organizationsReg;
         updateData.organizationName = fullName;
       }
 
@@ -164,15 +164,15 @@ export default function Onboarding() {
             </div>
           )}
 
-          {userProfile.role === 'ngo' && (
+          {userProfile.role === 'organizations' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Government NGO Registration Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Government organizations Registration Number</label>
               <input
                 type="text"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
-                value={ngoReg}
-                onChange={(e) => setNgoReg(e.target.value)}
+                value={organizationsReg}
+                onChange={(e) => setorganizationsReg(e.target.value)}
               />
             </div>
           )}

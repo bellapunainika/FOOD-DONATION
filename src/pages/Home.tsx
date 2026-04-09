@@ -51,7 +51,7 @@ export default function Home() {
       if (activeUsers.length === 0) {
         setUsers([
           { uid: '1', email: '', role: 'donor', fullName: 'Grand Restaurant', location: { lat: 28.6139, lng: 77.2090, address: 'Delhi' }, createdAt: 0 },
-          { uid: '2', email: '', role: 'ngo', fullName: 'Hope Foundation', location: { lat: 28.6239, lng: 77.2190, address: 'Delhi' }, createdAt: 0 },
+          { uid: '2', email: '', role: 'organizations', fullName: 'Hope Foundation', location: { lat: 28.6239, lng: 77.2190, address: 'Delhi' }, createdAt: 0 },
           { uid: '3', email: '', role: 'volunteer', fullName: 'John Doe', location: { lat: 28.6039, lng: 77.1990, address: 'Delhi' }, createdAt: 0 }
         ]);
       } else {
@@ -101,7 +101,7 @@ export default function Home() {
             Share Food. <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-brand-600">Give Hope.</span>
           </h1>
           <p className="max-w-2xl text-xl text-gray-300 mb-10">
-            Join our mission to eliminate food waste and hunger. Connect restaurants with surplus food to NGOs and volunteers who can deliver it directly to those in need.
+            Join our mission to eliminate food waste and hunger. Connect restaurants with surplus food to organizationss and volunteers who can deliver it directly to those in need.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
@@ -131,7 +131,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Growing Network</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">See where our donors, NGOs, and volunteers are actively making a difference in real-time.</p>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">See where our donors, organizationss, and volunteers are actively making a difference in real-time.</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -152,7 +152,7 @@ export default function Home() {
                         position={[u.location!.lat, u.location!.lng]}
                         icon={customMarker(
                           u.role === 'donor' ? '#3b82f6' : 
-                          u.role === 'ngo' ? '#22c55e' : 
+                          u.role === 'organizations' ? '#22c55e' : 
                           '#eab308'
                         )}
                       >
@@ -182,7 +182,7 @@ export default function Home() {
                   <Heart />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl text-gray-900">NGOs</h3>
+                  <h3 className="font-bold text-xl text-gray-900">organizationss</h3>
                   <p className="text-gray-500 text-sm">Distributing food</p>
                 </div>
               </div>
