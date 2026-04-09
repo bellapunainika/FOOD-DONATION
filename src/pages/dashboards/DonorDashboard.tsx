@@ -15,7 +15,8 @@ export default function DonorDashboard() {
   const [foodCategory, setFoodCategory] = useState<'Veg' | 'Non-Veg' | 'Both'>('Veg');
   const [foodType, setFoodType] = useState<'Cooked' | 'Packaged' | 'Raw Ingredients'>('Cooked');
   const [quantityInMeals, setQuantityInMeals] = useState<number>(10);
-  const [expiryHours, setExpiryHours] = useState<number>(4);
+  const [expiryValue, setExpiryValue] = useState<number>(4);
+  const [expiryUnit, setExpiryUnit] = useState<'Hours' | 'Days'>('Hours');
   const [storageInfo, setStorageInfo] = useState<'Room temp' | 'Refrigerated'>('Room temp');
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function DonorDashboard() {
     
     try {
       const now = Date.now();
-      const expiry = now + (expiryHours * 60 * 60 * 1000); // converting hours to ms
+      const expiry = now + (expiryUnit === 'Days' ? expiryValue * 24 * 60 * 60 * 1000 : expiryValue * 60 * 60 * 1000);
       
       const newDonation: Omit<FoodDonation, 'id'> = {
         donorId: userProfile.uid,
@@ -144,7 +145,14 @@ export default function DonorDashboard() {
                       </div>
                       {donation.status === 'available' && (
                         <div className="mt-2 text-sm text-gray-500">
-                          Expires in: {Math.max(0, Math.floor((donation.expiryTime - Date.now()) / (1000 * 60 * 60)))} hours
+                          Expires in: {(() => {
+                            const hoursLeft = Math.max(0, Math.floor((donation.expiryTime - Date.now()) / (1000 * 60 * 60)));
+                            const days = Math.floor(hoursLeft / 24);
+                            const hours = hoursLeft % 24;
+                            if (days > 0 && hours > 0) return `${days} day(s) ${hours} hour(s)`;
+                            if (days > 0) return `${days} day(s)`;
+                            return `${hoursLeft} hour(s)`;
+                          })()}
                         </div>
                       )}
                     </div>
@@ -188,8 +196,14 @@ export default function DonorDashboard() {
                     <input type="number" min="1" required value={quantityInMeals} onChange={e => setQuantityInMeals(parseInt(e.target.value))} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3" />
                   </div>
                   <div>
-                     <label className="block text-sm font-medium text-gray-700">Expires In (Hours)</label>
-                     <input type="number" min="1" required value={expiryHours} onChange={e => setExpiryHours(parseInt(e.target.value))} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3" />
+                    <label className="block text-sm font-medium text-gray-700">Expires In</label>
+                    <div className="mt-1 flex space-x-2">
+                       <input type="number" min="1" required value={expiryValue} onChange={e => setExpiryValue(parseInt(e.target.value) || 0)} className="flex-1 block w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500 sm:text-sm" />
+                       <select value={expiryUnit} onChange={e => setExpiryUnit(e.target.value as any)} className="block w-28 pl-3 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                         <option>Hours</option>
+                         <option>Days</option>
+                       </select>
+                    </div>
                   </div>
                    <div>
                     <label className="block text-sm font-medium text-gray-700">Storage Info</label>
