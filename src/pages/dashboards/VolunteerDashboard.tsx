@@ -6,7 +6,7 @@ import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle } from 'lucide-react';
+import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 
 const currentLocIcon = L.divIcon({
   className: 'custom-div-icon',
@@ -28,9 +28,20 @@ export default function VolunteerDashboard() {
   const [previousActiveCount, setPreviousActiveCount] = useState<number>(0);
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | '7days' | '30days'>('all');
+  
+  // Availability toggle state
+  const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
+  const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
+
+  // Sync availability state with userProfile
+  useEffect(() => {
+    if (userProfile?.isAvailable !== undefined) {
+      setIsAvailable(userProfile.isAvailable);
+    }
+  }, [userProfile?.isAvailable]);
 
   useEffect(() => {
-    // Donations that are available for pickup
+    // Donations that are available for pickup (only shown if volunteer is available)
     const qPickups = query(collection(db, 'donations'), where('status', '==', 'available'));
     const unsubPickups = onSnapshot(qPickups, (snapshot) => {
       const docs: FoodDonation[] = [];
@@ -69,6 +80,38 @@ export default function VolunteerDashboard() {
     }
   }, [userProfile, previousActiveCount]);
 
+  // Toggle availability handler
+  const toggleAvailability = async () => {
+    if (!userProfile?.uid) return;
+    
+    setIsTogglingAvailability(true);
+    try {
+      const newAvailabilityStatus = !isAvailable;
+      await updateDoc(doc(db, 'users', userProfile.uid), {
+        isAvailable: newAvailabilityStatus,
+        lastAvailabilityToggle: Date.now()
+      });
+      
+      setIsAvailable(newAvailabilityStatus);
+      
+      if (newAvailabilityStatus) {
+        toast.success('🟢 You\'re ONLINE!\nReady to help people in need!', {
+          duration: 3,
+          icon: '✨'
+        });
+      } else {
+        toast.success('🔴 You\'re OFFLINE\nTake a break, you deserve it!', {
+          duration: 3
+        });
+      }
+    } catch (err: any) {
+      toast.error('Failed to update availability: ' + err.message);
+      setIsTogglingAvailability(false);
+    } finally {
+      setIsTogglingAvailability(false);
+    }
+  };
+
   const acceptPickup = async (donationId: string) => {
       if (!userProfile) return;
       try {
@@ -79,7 +122,7 @@ export default function VolunteerDashboard() {
               volunteerEmail: userProfile.email,
               volunteerPhone: userProfile.phoneNumber
           });
-          toast.success("Delivery accepted! Please proceed to pickup location.");
+          toast.success("🎯 Wow! You've accepted a delivery\n⏱️ Head to the pickup location now!");
       } catch(err: any) {
           toast.error("Failed: " + err.message);
       }
@@ -89,9 +132,9 @@ export default function VolunteerDashboard() {
       try {
           await updateDoc(doc(db, 'donations', donationId), { status });
           if(status === 'delivered') {
-              toast.success("Hooray! Delivery marked as completed. Thank you hero!");
+              toast.success("🌟 Delivery completed! You're making a difference\n💪 Keep up the amazing work!");
           } else {
-              toast.success("Marked as in-transit.");
+              toast.success("📦 Package picked up! On the way now\n🚗 Safe journey ahead!");
           }
       } catch (err: any) {
           toast.error("Failed: " + err.message);
@@ -116,9 +159,80 @@ export default function VolunteerDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header with Availability Toggle */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold leading-7 text-gray-900">Volunteer Logistics</h2>
-        <p className="mt-1 text-gray-500">Pick up ready donations and deliver them safely to the assigned organization.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <h2 className="text-3xl font-bold leading-7 text-gray-900">Volunteer Dashboard</h2>
+            <p className="mt-1 text-gray-500">Help people in need by making food donations accessible to everyone.</p>
+          </div>
+          
+          {/* Modern Toggle Switch */}
+          <div className="flex items-center gap-4 bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+            <div className="flex flex-col items-end">
+              <p className={`text-sm font-semibold transition-colors ${
+                isAvailable ? 'text-green-700' : 'text-gray-700'
+              }`}>
+                Available for Delivery
+              </p>
+              <p className={`text-xs mt-1 font-medium transition-colors ${
+                isAvailable ? 'text-green-600' : 'text-gray-500'
+              }`}>
+                {isAvailable ? '🟢 You are ONLINE' : '🔴 You are OFFLINE'}
+              </p>
+            </div>
+            
+            {/* Toggle Switch Button */}
+            <button
+              onClick={toggleAvailability}
+              disabled={isTogglingAvailability}
+              className={`relative inline-flex items-center h-10 w-18 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 ${
+                isAvailable
+                  ? 'bg-green-500 shadow-lg shadow-green-500/50'
+                  : 'bg-gray-300 shadow-lg shadow-gray-300/50'
+              } ${isTogglingAvailability ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-xl'}`}
+            >
+              <span
+                className={`inline-block h-8 w-8 transform rounded-full bg-white transition-transform duration-300 flex items-center justify-center ${
+                  isAvailable ? 'translate-x-9' : 'translate-x-1'
+                }`}
+              >
+                {isAvailable ? (
+                  <Zap size={16} className="text-green-500" />
+                ) : (
+                  <AlertCircle size={16} className="text-gray-400" />
+                )}
+              </span>
+            </button>
+          </div>
+        </div>
+        
+        {/* Status Message */}
+        <div className={`mt-6 p-4 rounded-xl border-2 flex items-start gap-3 transition-all duration-300 ${
+          isAvailable
+            ? 'bg-green-50 border-green-300'
+            : 'bg-gray-100 border-gray-300'
+        }`}>
+          <div className={`flex-shrink-0 mt-0.5 ${isAvailable ? 'animate-pulse' : ''}`}>
+            {isAvailable ? (
+              <Zap size={20} className="text-green-600" />
+            ) : (
+              <AlertCircle size={20} className="text-gray-600" />
+            )}
+          </div>
+          <div>
+            <p className={`font-semibold ${isAvailable ? 'text-green-900' : 'text-gray-900'}`}>
+              {isAvailable
+                ? '✅ You are ONLINE and ready for deliveries!'
+                : '⏸️ You are currently OFFLINE'}
+            </p>
+            <p className={`text-sm mt-1 ${isAvailable ? 'text-green-700' : 'text-gray-700'}`}>
+              {isAvailable
+                ? 'Nearby donations will appear below. You\'ll be notified when someone needs your help. Thank you for being a hero!'
+                : 'Toggle ON to start receiving donation requests and notifications. Take a break whenever you need!'}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8 text-center text-white">
@@ -163,9 +277,19 @@ export default function VolunteerDashboard() {
               </div>
 
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                 <h3 className="font-bold text-xl mb-4">Available Needs Nearby</h3>
-                 {availablePickups.length === 0 && <p className="text-gray-500">No pickups available currently.</p>}
-                 <div className="space-y-4">
+                 <h3 className="font-bold text-xl mb-4">🎯 Available Needs Nearby</h3>
+                 {!isAvailable ? (
+                   <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                     <Zap size={40} className="mx-auto text-gray-300 mb-3" />
+                     <p className="text-gray-600 text-lg font-medium mb-2">Go Online to See Donations</p>
+                     <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                       Toggle your availability to the ON position to start seeing food donations that need a hero like you!
+                     </p>
+                   </div>
+                 ) : availablePickups.length === 0 ? (
+                   <p className="text-gray-500 py-8 text-center">✨ No pickups available currently. Check back soon!</p>
+                 ) : (
+                   <div className="space-y-4">
                      {availablePickups.map(don => (
                         <div key={don.id} className="flex flex-col sm:flex-row justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 gap-4">
                            <div className="flex-1">
@@ -185,7 +309,8 @@ export default function VolunteerDashboard() {
                            </button>
                         </div>
                      ))}
-                 </div>
+                    </div>
+                 )}
               </div>
           </div>
 
