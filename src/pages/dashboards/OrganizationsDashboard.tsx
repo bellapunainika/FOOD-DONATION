@@ -66,10 +66,23 @@ export default function OrganizationsDashboard() {
         organizationEmail: userProfile.email,
         organizationPhone: userProfile.phoneNumber
       });
-      toast.success('Donation accepted! Volunteers nearby will be notified for pickup.');
+      toast.success('Donation accepted! Please proceed to pickup location.');
     } catch (error: any) {
       toast.error('Failed to accept: ' + error.message);
     }
+  };
+
+  const updateDeliveryStatus = async (donationId: string, status: 'picked_up' | 'delivered') => {
+      try {
+          await updateDoc(doc(db, 'donations', donationId), { status });
+          if(status === 'delivered') {
+              toast.success("Hooray! Delivery marked as completed.");
+          } else {
+              toast.success("Marked as picked up.");
+          }
+      } catch (err: any) {
+          toast.error("Failed: " + err.message);
+      }
   };
 
   const calculateUrgency = (expiryTime: number) => {
@@ -106,7 +119,7 @@ export default function OrganizationsDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:truncate">Organizations Dashboard</h2>
-        <p className="mt-1 text-gray-500">Find nearby active donations and direct volunteers to distribute them.</p>
+        <p className="mt-1 text-gray-500">Find nearby active donations, pick them up, and distribute them to people in need.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -192,19 +205,21 @@ export default function OrganizationsDashboard() {
                          {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                          {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                        </div>
-                       {d.volunteerName && (
-                         <>
-                           <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Assigned Volunteer:</div>
-                           <div className="text-sm text-gray-600 mb-2">
-                             <p className="font-semibold">{d.volunteerName}</p>
-                             {d.volunteerEmail && <p>📧 {d.volunteerEmail}</p>}
-                             {d.volunteerPhone && <p>📱 {d.volunteerPhone}</p>}
-                           </div>
-                         </>
-                       )}
-                       <span className="text-sm font-semibold capitalize mt-2 inline-block px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                         Status: {d.status.replace('_', ' ')}
-                       </span>
+                       <div className="space-y-2 mt-4">
+                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                             Status: {d.status.replace('_', ' ')}
+                           </span>
+                           {d.status === 'reserved' && (
+                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mt-2">
+                                  Mark as Picked Up
+                               </button>
+                           )}
+                           {d.status === 'picked_up' && (
+                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2">
+                                  Mark as Delivered
+                               </button>
+                           )}
+                       </div>
                     </li>
                  ))}
                  {activeDonations.length === 0 && (
@@ -314,20 +329,6 @@ export default function OrganizationsDashboard() {
                             )}
                             {donation.donorPhone && (
                               <p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {donation.volunteerName && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">👤 Delivered By</p>
-                          <div>
-                            <p className="text-sm text-gray-900 font-medium">{donation.volunteerName}</p>
-                            {donation.volunteerEmail && (
-                              <p className="text-sm text-gray-600">📧 {donation.volunteerEmail}</p>
-                            )}
-                            {donation.volunteerPhone && (
-                              <p className="text-sm text-gray-600">📱 {donation.volunteerPhone}</p>
                             )}
                           </div>
                         </div>

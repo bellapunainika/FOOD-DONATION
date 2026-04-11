@@ -30,8 +30,8 @@ export default function VolunteerDashboard() {
   const [historyFilter, setHistoryFilter] = useState<'all' | '7days' | '30days'>('all');
 
   useEffect(() => {
-    // Donations reserved by organizations but not yet picked up by any volunteer
-    const qPickups = query(collection(db, 'donations'), where('status', '==', 'reserved'));
+    // Donations that are available for pickup
+    const qPickups = query(collection(db, 'donations'), where('status', '==', 'available'));
     const unsubPickups = onSnapshot(qPickups, (snapshot) => {
       const docs: FoodDonation[] = [];
       snapshot.forEach(doc => {
@@ -73,6 +73,7 @@ export default function VolunteerDashboard() {
       if (!userProfile) return;
       try {
           await updateDoc(doc(db, 'donations', donationId), {
+              status: 'reserved',
               volunteerId: userProfile.uid,
               volunteerName: userProfile.fullName,
               volunteerEmail: userProfile.email,
@@ -153,7 +154,6 @@ export default function VolunteerDashboard() {
                              {don.donorEmail && <>📧 {don.donorEmail}<br/></>}
                              {don.donorPhone && <>📱 {don.donorPhone}<br/></>}
                              {don.quantityInMeals} Meals<br/>
-                             {don.organizationName && <>Org: {don.organizationName}<br/></>}
                              <button onClick={() => don.id && acceptPickup(don.id)} className="w-full mt-2 text-xs bg-brand-600 text-white rounded p-1">Accept</button>
                           </Popup>
                        </Marker>
@@ -171,20 +171,10 @@ export default function VolunteerDashboard() {
                            <div className="flex-1">
                                <div className="font-bold text-lg text-gray-900">{don.donorName}</div>
                                <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
-                               <div className="text-sm text-gray-600">
+                                <div className="text-sm text-gray-600">
                                  {don.donorEmail && <p>📧 {don.donorEmail}</p>}
                                  {don.donorPhone && <p>📱 {don.donorPhone}</p>}
                                </div>
-                               {don.organizationName && (
-                                 <>
-                                   <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Organization:</div>
-                                   <div className="text-sm text-gray-600">
-                                     <p className="font-semibold">{don.organizationName}</p>
-                                     {don.organizationEmail && <p>📧 {don.organizationEmail}</p>}
-                                     {don.organizationPhone && <p>📱 {don.organizationPhone}</p>}
-                                   </div>
-                                 </>
-                               )}
                                <div className="text-sm text-gray-600 mt-2">Quantity: {don.quantityInMeals} Meals | Ready since {new Date(don.preparedTime).toLocaleTimeString()}</div>
                                <div className="text-sm text-gray-500 mt-1 flex gap-2 items-center">
                                   <Navigation size={14}/> {don.location.address}
@@ -213,16 +203,6 @@ export default function VolunteerDashboard() {
                            {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                            {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                          </div>
-                         {d.organizationName && (
-                           <>
-                             <div className="text-xs uppercase text-gray-500 font-semibold">Receiving Organization:</div>
-                             <div className="text-sm text-gray-600 mb-2">
-                               <p className="font-semibold">{d.organizationName}</p>
-                               {d.organizationEmail && <p>📧 {d.organizationEmail}</p>}
-                               {d.organizationPhone && <p>📱 {d.organizationPhone}</p>}
-                             </div>
-                           </>
-                         )}
                          <div className="text-sm text-gray-600 mb-4">{d.quantityInMeals} Meals</div>
 
                          <div className="space-y-2">
@@ -233,7 +213,7 @@ export default function VolunteerDashboard() {
                             )}
                             {d.status === 'picked_up' && (
                                 <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition">
-                                   <Check size={18} /> Mark as Delivered to organizations
+                                   <Check size={18} /> Mark as Delivered
                                 </button>
                             )}
                          </div>
@@ -353,20 +333,6 @@ export default function VolunteerDashboard() {
                             )}
                             {donation.donorPhone && (
                               <p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {donation.organizationName && (
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🏢 Delivered To</p>
-                          <div>
-                            <p className="text-sm text-gray-900 font-medium">{donation.organizationName}</p>
-                            {donation.organizationEmail && (
-                              <p className="text-sm text-gray-600">📧 {donation.organizationEmail}</p>
-                            )}
-                            {donation.organizationPhone && (
-                              <p className="text-sm text-gray-600">📱 {donation.organizationPhone}</p>
                             )}
                           </div>
                         </div>
