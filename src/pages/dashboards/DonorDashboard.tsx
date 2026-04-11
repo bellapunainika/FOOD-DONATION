@@ -17,6 +17,8 @@ export default function DonorDashboard() {
   const [foodCategory, setFoodCategory] = useState<'Veg' | 'Non-Veg' | 'Both'>('Veg');
   const [foodType, setFoodType] = useState<'Cooked' | 'Packaged' | 'Raw Ingredients'>('Cooked');
   const [quantityInMeals, setQuantityInMeals] = useState<number>(10);
+  const [vegQuantity, setVegQuantity] = useState<number>(5);
+  const [nonVegQuantity, setNonVegQuantity] = useState<number>(5);
   const [expiryValue, setExpiryValue] = useState<number>(4);
   const [expiryUnit, setExpiryUnit] = useState<'Hours' | 'Days'>('Hours');
   const [storageInfo, setStorageInfo] = useState<'Room temp' | 'Refrigerated'>('Room temp');
@@ -43,6 +45,11 @@ export default function DonorDashboard() {
       const now = Date.now();
       const expiry = now + (expiryUnit === 'Days' ? expiryValue * 24 * 60 * 60 * 1000 : expiryValue * 60 * 60 * 1000);
       
+      let finalQuantity = quantityInMeals;
+      if (foodCategory === 'Both') {
+        finalQuantity = vegQuantity + nonVegQuantity;
+      }
+      
       const newDonation: Omit<FoodDonation, 'id'> = {
         donorId: userProfile.uid,
         donorName: userProfile.organizationName || userProfile.fullName || 'Anonymous Donor',
@@ -51,7 +58,8 @@ export default function DonorDashboard() {
         status: 'available',
         foodCategory,
         foodType,
-        quantityInMeals,
+        quantityInMeals: finalQuantity,
+        ...(foodCategory === 'Both' && { vegQuantity, nonVegQuantity }),
         preparedTime: now,
         expiryTime: expiry,
         storageInfo,
@@ -169,6 +177,9 @@ export default function DonorDashboard() {
                       <div className="flex items-center justify-between gap-4">
                         <p className="text-xl font-bold text-gray-900 truncate">
                           {donation.quantityInMeals} Meals ({donation.foodType} - {donation.foodCategory})
+                          {donation.foodCategory === 'Both' && donation.vegQuantity !== undefined && donation.nonVegQuantity !== undefined && (
+                            <span className="text-sm font-normal text-gray-500 ml-2">({donation.vegQuantity} Veg, {donation.nonVegQuantity} Non-Veg)</span>
+                          )}
                         </p>
                         <div className="flex items-center gap-2">
                           <div className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${urgency.border} ${urgency.color} items-center gap-1`}>
@@ -295,6 +306,9 @@ export default function DonorDashboard() {
                         <div className="flex-1">
                           <p className="text-lg font-bold text-gray-900">
                             {donation.quantityInMeals} Meals - {donation.foodType}
+                            {donation.foodCategory === 'Both' && donation.vegQuantity !== undefined && donation.nonVegQuantity !== undefined && (
+                              <span className="text-sm font-normal text-gray-500 ml-2 inline-block">({donation.vegQuantity} Veg, {donation.nonVegQuantity} Non-Veg)</span>
+                            )}
                           </p>
                           <p className="text-sm text-gray-500">
                             {donation.foodCategory} • {new Date(donation.createdAt).toLocaleDateString()}
@@ -401,10 +415,23 @@ export default function DonorDashboard() {
                       <option>Raw Ingredients</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Quantity (Number of Meals)</label>
-                    <input type="number" min="1" required value={quantityInMeals} onChange={e => setQuantityInMeals(parseInt(e.target.value))} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3" />
-                  </div>
+                  {foodCategory === 'Both' ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Veg Quantity (Meals)</label>
+                        <input type="number" min="1" required value={vegQuantity} onChange={e => setVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Non-Veg Quantity (Meals)</label>
+                        <input type="number" min="1" required value={nonVegQuantity} onChange={e => setNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Quantity (Number of Meals)</label>
+                      <input type="number" min="1" required value={quantityInMeals} onChange={e => setQuantityInMeals(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Expires In</label>
                     <div className="mt-1 flex space-x-2">

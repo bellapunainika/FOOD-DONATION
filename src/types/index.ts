@@ -51,6 +51,8 @@ export interface FoodDonation {
   foodCategory: 'Veg' | 'Non-Veg' | 'Both';
   foodType: 'Cooked' | 'Packaged' | 'Raw Ingredients';
   quantityInMeals: number;
+  vegQuantity?: number;
+  nonVegQuantity?: number;
   preparedTime: number; // timestamp
   expiryTime: number; // timestamp
   pickupTimeWindow?: string;
