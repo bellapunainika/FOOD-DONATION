@@ -9,6 +9,13 @@ export interface LocationData {
   landmark?: string;
 }
 
+export interface AvailabilitySlot {
+  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+  isActive: boolean;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -27,6 +34,11 @@ export interface UserProfile {
   organizationsType?: 'organizations' | 'Volunteer Group' | 'Individual Volunteer';
   capacityMealsPerDay?: number;
   availableVehicles?: boolean;
+  
+  // Volunteer specific
+  isAvailable?: boolean; // Real-time availability toggle
+  availabilitySchedule?: AvailabilitySlot[];
+  lastAvailabilityToggle?: number; // Timestamp of last toggle
 }
 
 export interface FoodDonation {
