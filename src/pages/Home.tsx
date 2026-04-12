@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { collection, query, getDocs, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserProfile, FoodDonation } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Users, Heart, Navigation } from 'lucide-react';
@@ -24,6 +25,7 @@ const customMarker = (color: string) => L.divIcon({
 });
 
 export default function Home() {
+  const { userProfile } = useAuth();
   const [totalMeals, setTotalMeals] = useState(0);
   const [displayedMeals, setDisplayedMeals] = useState(0);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -105,12 +107,20 @@ export default function Home() {
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/register" className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-brand-500/30 transition-all transform hover:-translate-y-1">
-              Join the Mission
-            </Link>
-            <Link to="/login" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md rounded-full font-bold text-lg transition-all">
-              Log In
-            </Link>
+            {userProfile ? (
+              <Link to="/dashboard" className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-brand-500/30 transition-all transform hover:-translate-y-1">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-brand-500/30 transition-all transform hover:-translate-y-1">
+                  Join the Mission
+                </Link>
+                <Link to="/login" className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md rounded-full font-bold text-lg transition-all">
+                  Log In
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

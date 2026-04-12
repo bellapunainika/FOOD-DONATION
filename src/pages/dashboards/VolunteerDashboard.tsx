@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
@@ -29,6 +29,13 @@ export default function VolunteerDashboard() {
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | '7days' | '30days'>('all');
   
+  // Partial Acceptance State
+  const [acceptingDonation, setAcceptingDonation] = useState<FoodDonation | null>(null);
+  const [takeQuantity, setTakeQuantity] = useState<number>(1);
+  const [takeVegQuantity, setTakeVegQuantity] = useState<number>(0);
+  const [takeNonVegQuantity, setTakeNonVegQuantity] = useState<number>(0);
+  const [isAccepting, setIsAccepting] = useState(false);
+  
   // Availability toggle state
   const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
   const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
@@ -45,10 +52,10 @@ export default function VolunteerDashboard() {
     const qPickups = query(collection(db, 'donations'), where('status', '==', 'available'));
     const unsubPickups = onSnapshot(qPickups, (snapshot) => {
       const docs: FoodDonation[] = [];
+      const now = Date.now();
       snapshot.forEach(doc => {
          const data = { id: doc.id, ...doc.data() } as FoodDonation;
-         // Ensure no other volunteer has claimed it
-         if (!data.volunteerId) docs.push(data);
+         if (!data.volunteerId && data.expiryTime > now) docs.push(data);
       });
       setAvailablePickups(docs);
     });
@@ -112,19 +119,96 @@ export default function VolunteerDashboard() {
     }
   };
 
-  const acceptPickup = async (donationId: string) => {
-      if (!userProfile) return;
+  const handleOpenAcceptModal = (donation: FoodDonation) => {
+    setAcceptingDonation(donation);
+    if (donation.foodCategory === 'Both') {
+      setTakeVegQuantity(donation.vegQuantity || 0);
+      setTakeNonVegQuantity(donation.nonVegQuantity || 0);
+    } else {
+      setTakeQuantity(donation.quantityInMeals);
+    }
+  };
+
+  const confirmAcceptPickup = async () => {
+      if (!userProfile || !acceptingDonation || !acceptingDonation.id) return;
+      setIsAccepting(true);
       try {
-          await updateDoc(doc(db, 'donations', donationId), {
-              status: 'reserved',
-              volunteerId: userProfile.uid,
-              volunteerName: userProfile.fullName,
-              volunteerEmail: userProfile.email,
-              volunteerPhone: userProfile.phoneNumber
-          });
+          const donationRef = doc(db, 'donations', acceptingDonation.id);
+          const donationSnap = await getDoc(donationRef);
+          
+          if (!donationSnap.exists()) {
+            toast.error("Donation is no longer available.");
+            setAcceptingDonation(null);
+            setIsAccepting(false);
+            return;
+          }
+          
+          const currentData = donationSnap.data() as FoodDonation;
+          
+          let takingTotal = 0;
+          let takingVeg = 0;
+          let takingNonVeg = 0;
+          
+          if (currentData.foodCategory === 'Both') {
+            takingVeg = takeVegQuantity;
+            takingNonVeg = takeNonVegQuantity;
+            takingTotal = takingVeg + takingNonVeg;
+            if (takingVeg < 0 || takingNonVeg < 0 || takingVeg > (currentData.vegQuantity || 0) || takingNonVeg > (currentData.nonVegQuantity || 0) || takingTotal <= 0) {
+                toast.error("Invalid quantity selected.");
+                setIsAccepting(false);
+                return;
+            }
+          } else {
+            takingTotal = takeQuantity;
+            if (takingTotal <= 0 || takingTotal > currentData.quantityInMeals) {
+                toast.error("Invalid quantity selected.");
+                setIsAccepting(false);
+                return;
+            }
+          }
+          
+          const volName = userProfile.fullName || 'Anonymous Volunteer';
+          
+          if (takingTotal === currentData.quantityInMeals) {
+              await updateDoc(donationRef, {
+                  status: 'reserved',
+                  volunteerId: userProfile.uid,
+                  volunteerName: volName,
+                  volunteerEmail: userProfile.email || '',
+                  volunteerPhone: userProfile.phoneNumber || ''
+              });
+          } else {
+              const updates: any = { quantityInMeals: currentData.quantityInMeals - takingTotal };
+              if (currentData.foodCategory === 'Both') {
+                  updates.vegQuantity = (currentData.vegQuantity || 0) - takingVeg;
+                  updates.nonVegQuantity = (currentData.nonVegQuantity || 0) - takingNonVeg;
+              }
+              await updateDoc(donationRef, updates);
+              
+              const newDonation = {
+                  ...currentData,
+                  quantityInMeals: takingTotal,
+                  status: 'reserved',
+                  volunteerId: userProfile.uid,
+                  volunteerName: volName,
+                  volunteerEmail: userProfile.email || '',
+                  volunteerPhone: userProfile.phoneNumber || '',
+                  createdAt: Date.now()
+              };
+              if (currentData.foodCategory === 'Both') {
+                  newDonation.vegQuantity = takingVeg;
+                  newDonation.nonVegQuantity = takingNonVeg;
+              }
+              delete newDonation.id;
+              
+              await addDoc(collection(db, 'donations'), newDonation);
+          }
           toast.success("🎯 Wow! You've accepted a delivery\n⏱️ Head to the pickup location now!");
+          setAcceptingDonation(null);
       } catch(err: any) {
           toast.error("Failed: " + err.message);
+      } finally {
+          setIsAccepting(false);
       }
   };
 
@@ -268,7 +352,7 @@ export default function VolunteerDashboard() {
                              {don.donorEmail && <>📧 {don.donorEmail}<br/></>}
                              {don.donorPhone && <>📱 {don.donorPhone}<br/></>}
                              {don.quantityInMeals} Meals<br/>
-                             <button onClick={() => don.id && acceptPickup(don.id)} className="w-full mt-2 text-xs bg-brand-600 text-white rounded p-1">Accept</button>
+                             <button onClick={() => handleOpenAcceptModal(don)} className="w-full mt-2 text-xs bg-brand-600 text-white rounded p-1">Accept</button>
                           </Popup>
                        </Marker>
                     ))}
@@ -304,7 +388,7 @@ export default function VolunteerDashboard() {
                                   <Navigation size={14}/> {don.location.address}
                                </div>
                            </div>
-                           <button onClick={() => don.id && acceptPickup(don.id)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-sm transition whitespace-nowrap h-fit">
+                           <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-sm transition whitespace-nowrap h-fit">
                                Accept Delivery
                            </button>
                         </div>
@@ -478,6 +562,50 @@ export default function VolunteerDashboard() {
           </div>
         )}
       </div>
+
+      {acceptingDonation && (
+        <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setAcceptingDonation(null)}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-xl font-bold leading-6 text-gray-900 mb-4">
+                  Accept Pickup
+                </h3>
+                <div className="mb-4 text-sm text-gray-500">
+                  How many meals would you like to receive?
+                </div>
+                {acceptingDonation.foodCategory === 'Both' ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Veg (Max: {acceptingDonation.vegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.vegQuantity} value={takeVegQuantity} onChange={e => setTakeVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Non-Veg (Max: {acceptingDonation.nonVegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.nonVegQuantity} value={takeNonVegQuantity} onChange={e => setTakeNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Quantity (Max: {acceptingDonation.quantityInMeals})</label>
+                    <input type="number" min="1" max={acceptingDonation.quantityInMeals} value={takeQuantity} onChange={e => setTakeQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                  </div>
+                )}
+                <div className="mt-5 sm:mt-6 flex gap-3">
+                  <button disabled={isAccepting} onClick={confirmAcceptPickup} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
+                    {isAccepting ? 'Accepting...' : 'Confirm'}
+                  </button>
+                  <button onClick={() => setAcceptingDonation(null)} className="flex-1 inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:text-sm">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
