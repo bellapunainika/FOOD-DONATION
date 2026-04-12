@@ -52,10 +52,11 @@ export default function VolunteerDashboard() {
     const qPickups = query(collection(db, 'donations'), where('status', '==', 'available'));
     const unsubPickups = onSnapshot(qPickups, (snapshot) => {
       const docs: FoodDonation[] = [];
+      const now = Date.now();
       snapshot.forEach(doc => {
          const data = { id: doc.id, ...doc.data() } as FoodDonation;
-         // Ensure no other volunteer has claimed it
-         if (!data.volunteerId) docs.push(data);
+         // Ensure no other volunteer has claimed it and it's not expired
+         if (!data.volunteerId && data.expiryTime > now) docs.push(data);
       });
       setAvailablePickups(docs);
     });

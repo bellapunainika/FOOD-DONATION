@@ -35,7 +35,13 @@ export default function OrganizationsDashboard() {
     const qAvailable = query(collection(db, 'donations'), where('status', '==', 'available'));
     const unsubAvailable = onSnapshot(qAvailable, (snapshot) => {
       const docs: FoodDonation[] = [];
-      snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() } as FoodDonation));
+      const now = Date.now();
+      snapshot.forEach(doc => {
+        const data = { id: doc.id, ...doc.data() } as FoodDonation;
+        if (data.expiryTime > now) {
+            docs.push(data);
+        }
+      });
       docs.sort((a, b) => a.expiryTime - b.expiryTime); // prioritize closest to expiry
       setAvailableDonations(docs);
     });

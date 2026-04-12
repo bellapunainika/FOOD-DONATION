@@ -47,7 +47,7 @@ export interface FoodDonation {
   donorName: string;
   donorEmail?: string;
   donorPhone?: string;
-  status: 'available' | 'reserved' | 'picked_up' | 'delivered';
+  status: 'available' | 'reserved' | 'picked_up' | 'delivered' | 'expired';
   foodCategory: 'Veg' | 'Non-Veg' | 'Both';
   foodType: 'Cooked' | 'Packaged' | 'Raw Ingredients';
   quantityInMeals: number;
