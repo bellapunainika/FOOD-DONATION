@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, addDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
@@ -22,14 +22,14 @@ export default function OrganizationsDashboard() {
   const [previousAcceptedCount, setPreviousAcceptedCount] = useState<number>(0);
   const [expandedHistory, setExpandedHistory] = useState<string | null>(null);
   const [historyFilter, setHistoryFilter] = useState<'all' | '7days' | '30days'>('all');
-  
+
   // Partial Acceptance State
   const [acceptingDonation, setAcceptingDonation] = useState<FoodDonation | null>(null);
   const [takeQuantity, setTakeQuantity] = useState<number>(1);
   const [takeVegQuantity, setTakeVegQuantity] = useState<number>(0);
   const [takeNonVegQuantity, setTakeNonVegQuantity] = useState<number>(0);
   const [isAccepting, setIsAccepting] = useState(false);
-  
+
   useEffect(() => {
     // Listen for available donations generically (For scaled apps, add geohashing)
     const qAvailable = query(collection(db, 'donations'), where('status', '==', 'available'));
@@ -39,7 +39,7 @@ export default function OrganizationsDashboard() {
       snapshot.forEach(doc => {
         const data = { id: doc.id, ...doc.data() } as FoodDonation;
         if (data.expiryTime > now) {
-            docs.push(data);
+          docs.push(data);
         }
       });
       docs.sort((a, b) => a.expiryTime - b.expiryTime); // prioritize closest to expiry
@@ -51,7 +51,7 @@ export default function OrganizationsDashboard() {
       const unsubAccepted = onSnapshot(qAccepted, (snapshot) => {
         const docs: FoodDonation[] = [];
         snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() } as FoodDonation));
-        
+
         // Detect if an accepted donation was removed
         if (previousAcceptedCount > docs.length && previousAcceptedCount > 0) {
           toast.error('A donation allocation was taken back by the donor!');
@@ -84,78 +84,78 @@ export default function OrganizationsDashboard() {
     try {
       const donationRef = doc(db, 'donations', acceptingDonation.id);
       const donationSnap = await getDoc(donationRef);
-      
+
       if (!donationSnap.exists()) {
         toast.error("Donation is no longer available.");
         setAcceptingDonation(null);
         setIsAccepting(false);
         return;
       }
-      
+
       const currentData = donationSnap.data() as FoodDonation;
-      
+
       let takingTotal = 0;
       let takingVeg = 0;
       let takingNonVeg = 0;
-      
+
       if (currentData.foodCategory === 'Both') {
         takingVeg = takeVegQuantity;
         takingNonVeg = takeNonVegQuantity;
         takingTotal = takingVeg + takingNonVeg;
-        
+
         if (takingVeg < 0 || takingNonVeg < 0 || takingVeg > (currentData.vegQuantity || 0) || takingNonVeg > (currentData.nonVegQuantity || 0) || takingTotal <= 0) {
-            toast.error("Invalid quantity selected.");
-            setIsAccepting(false);
-            return;
+          toast.error("Invalid quantity selected.");
+          setIsAccepting(false);
+          return;
         }
       } else {
         takingTotal = takeQuantity;
         if (takingTotal <= 0 || takingTotal > currentData.quantityInMeals) {
-            toast.error("Invalid quantity selected.");
-            setIsAccepting(false);
-            return;
+          toast.error("Invalid quantity selected.");
+          setIsAccepting(false);
+          return;
         }
       }
-      
+
       const orgName = userProfile.organizationName || userProfile.fullName || '';
-      
+
       if (takingTotal === currentData.quantityInMeals) {
-          // Taking all
-          await updateDoc(donationRef, {
-              status: 'reserved',
-              reservedByorganizationsId: userProfile.uid,
-              organizationName: orgName,
-              organizationEmail: userProfile.email || '',
-              organizationPhone: userProfile.phoneNumber || ''
-          });
+        // Taking all
+        await updateDoc(donationRef, {
+          status: 'reserved',
+          reservedByorganizationsId: userProfile.uid,
+          organizationName: orgName,
+          organizationEmail: userProfile.email || '',
+          organizationPhone: userProfile.phoneNumber || ''
+        });
       } else {
-          // Splitting
-          const updates: any = {
-              quantityInMeals: currentData.quantityInMeals - takingTotal
-          };
-          if (currentData.foodCategory === 'Both') {
-              updates.vegQuantity = (currentData.vegQuantity || 0) - takingVeg;
-              updates.nonVegQuantity = (currentData.nonVegQuantity || 0) - takingNonVeg;
-          }
-          await updateDoc(donationRef, updates);
-          
-          const newDonation = {
-              ...currentData,
-              quantityInMeals: takingTotal,
-              status: 'reserved',
-              reservedByorganizationsId: userProfile.uid,
-              organizationName: orgName,
-              organizationEmail: userProfile.email || '',
-              organizationPhone: userProfile.phoneNumber || '',
-              createdAt: Date.now()
-          };
-          if (currentData.foodCategory === 'Both') {
-              newDonation.vegQuantity = takingVeg;
-              newDonation.nonVegQuantity = takingNonVeg;
-          }
-          delete newDonation.id;
-          
-          await addDoc(collection(db, 'donations'), newDonation);
+        // Splitting
+        const updates: any = {
+          quantityInMeals: currentData.quantityInMeals - takingTotal
+        };
+        if (currentData.foodCategory === 'Both') {
+          updates.vegQuantity = (currentData.vegQuantity || 0) - takingVeg;
+          updates.nonVegQuantity = (currentData.nonVegQuantity || 0) - takingNonVeg;
+        }
+        await updateDoc(donationRef, updates);
+
+        const newDonation = {
+          ...currentData,
+          quantityInMeals: takingTotal,
+          status: 'reserved',
+          reservedByorganizationsId: userProfile.uid,
+          organizationName: orgName,
+          organizationEmail: userProfile.email || '',
+          organizationPhone: userProfile.phoneNumber || '',
+          createdAt: Date.now()
+        };
+        if (currentData.foodCategory === 'Both') {
+          newDonation.vegQuantity = takingVeg;
+          newDonation.nonVegQuantity = takingNonVeg;
+        }
+        delete newDonation.id;
+
+        await addDoc(collection(db, 'donations'), newDonation);
       }
       toast.success('Donation accepted! Please proceed to pickup location.');
       setAcceptingDonation(null);
@@ -167,25 +167,25 @@ export default function OrganizationsDashboard() {
   };
 
   const updateDeliveryStatus = async (donationId: string, status: 'picked_up' | 'delivered') => {
-      try {
-          await updateDoc(doc(db, 'donations', donationId), { status });
-          if(status === 'delivered') {
-              toast.success("Hooray! Delivery marked as completed.");
-          } else {
-              toast.success("Marked as picked up.");
-          }
-      } catch (err: any) {
-          toast.error("Failed: " + err.message);
+    try {
+      await updateDoc(doc(db, 'donations', donationId), { status });
+      if (status === 'delivered') {
+        toast.success("Hooray! Delivery marked as completed.");
+      } else {
+        toast.success("Marked as picked up.");
       }
+    } catch (err: any) {
+      toast.error("Failed: " + err.message);
+    }
   };
 
   const calculateUrgency = (expiryTime: number) => {
-      const timeLeft = expiryTime - Date.now();
-      const hoursLeft = timeLeft / (1000 * 60 * 60);
-      if (hoursLeft < 0) return 'Expired';
-      if (hoursLeft < 2) return 'Critical';
-      if (hoursLeft < 6) return 'Moderate';
-      return 'Safe';
+    const timeLeft = expiryTime - Date.now();
+    const hoursLeft = timeLeft / (1000 * 60 * 60);
+    if (hoursLeft < 0) return 'Expired';
+    if (hoursLeft < 2) return 'Critical';
+    if (hoursLeft < 6) return 'Moderate';
+    return 'Safe';
   };
 
   const totalPeopleServed = acceptedDonations
@@ -195,8 +195,8 @@ export default function OrganizationsDashboard() {
   const getFilteredHistory = () => {
     const delivered = acceptedDonations.filter(d => d.status === 'delivered');
     const now = Date.now();
-    
-    switch(historyFilter) {
+
+    switch (historyFilter) {
       case '7days':
         return delivered.filter(d => (now - d.createdAt) <= 7 * 24 * 60 * 60 * 1000);
       case '30days':
@@ -218,14 +218,14 @@ export default function OrganizationsDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-            <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Total People Served</span>
-            <div className="text-6xl font-black text-brand-600">{totalPeopleServed}</div>
+          <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Total People Served</span>
+          <div className="text-6xl font-black text-brand-600">{totalPeopleServed}</div>
         </div>
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-            <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Active Procurements</span>
-            <div className="text-6xl font-black text-blue-600">
-               {acceptedDonations.filter(d => ['reserved', 'picked_up'].includes(d.status)).length}
-            </div>
+          <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Active Procurements</span>
+          <div className="text-6xl font-black text-blue-600">
+            {acceptedDonations.filter(d => ['reserved', 'picked_up'].includes(d.status)).length}
+          </div>
         </div>
       </div>
 
@@ -234,93 +234,93 @@ export default function OrganizationsDashboard() {
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 overflow-hidden">
             <h3 className="font-bold text-xl mb-4 text-gray-900">Map - Available Donations</h3>
             <div className="h-96 w-full rounded-2xl overflow-hidden z-0">
-               <MapContainer center={[28.6139, 77.2090]} zoom={11} className="w-full h-full z-0">
-                 <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-                 {availableDonations.map(don => don.location && (
-                    <Marker key={don.id} position={[don.location.lat, don.location.lng]} icon={customMarker}>
-                       <Popup>
-                          <strong>{don.quantityInMeals} Meals ({don.foodType})</strong><br/>
-                          Donor: {don.donorName}<br/>
-                          {don.donorEmail && <>📧 {don.donorEmail}<br/></>}
-                          {don.donorPhone && <>📱 {don.donorPhone}<br/></>}
-                          Urgency: {calculateUrgency(don.expiryTime)}
-                       </Popup>
-                    </Marker>
-                 ))}
-               </MapContainer>
+              <MapContainer center={[28.6139, 77.2090]} zoom={11} className="w-full h-full z-0">
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                {availableDonations.map(don => don.location && (
+                  <Marker key={don.id} position={[don.location.lat, don.location.lng]} icon={customMarker}>
+                    <Popup>
+                      <strong>{don.quantityInMeals} Meals ({don.foodType})</strong><br />
+                      Donor: {don.donorName}<br />
+                      {don.donorEmail && <>📧 {don.donorEmail}<br /></>}
+                      {don.donorPhone && <>📱 {don.donorPhone}<br /></>}
+                      Urgency: {calculateUrgency(don.expiryTime)}
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
           </div>
-          
+
           <div className="bg-white shadow overflow-hidden sm:rounded-xl">
-             <div className="px-4 py-5 border-b border-gray-200">
-               <h3 className="text-lg leading-6 font-medium text-gray-900">Priority Feed (Nearby & Expiring Soon)</h3>
-             </div>
-             <ul className="divide-y divide-gray-200">
-                {availableDonations.length === 0 && <li className="p-6 text-gray-500 text-center">No active donations nearby.</li>}
-                {availableDonations.map(don => {
-                  const urgencyStr = calculateUrgency(don.expiryTime);
-                  const isExpiring = urgencyStr === 'Critical';
-                  return (
-                    <li key={don.id} className="p-6 flex flex-col sm:flex-row justify-between items-start bg-white hover:bg-gray-50 transition gap-6">
-                       <div className="flex-1">
-                          <div className="text-lg font-bold text-gray-900">{don.quantityInMeals} Meals <span className="text-sm font-normal text-gray-500">by {don.donorName}</span></div>
-                          <div className="text-sm text-gray-600 mt-1">Category: {don.foodCategory} | Storage: {don.storageInfo}</div>
-                          <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg inline-block">
-                            <p className="text-xs font-semibold text-orange-700 uppercase mb-1">Donor Contact</p>
-                            <p className="font-semibold text-gray-900">{don.donorName}</p>
-                            {don.donorEmail && <p className="text-sm text-gray-600">📧 {don.donorEmail}</p>}
-                            {don.donorPhone && <p className="text-sm text-gray-600">📱 {don.donorPhone}</p>}
-                          </div>
-                          <div className="mt-2 flex gap-2">
-                             <span className={`px-2 py-1 text-xs rounded-full font-semibold ${isExpiring ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                {urgencyStr}
-                             </span>
-                          </div>
-                       </div>
-                       <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-sm transition whitespace-nowrap">
-                          Accept Allocation
-                       </button>
-                    </li>
-                  )
-                })}
-             </ul>
+            <div className="px-4 py-5 border-b border-gray-200">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Priority Feed (Nearby & Expiring Soon)</h3>
+            </div>
+            <ul className="divide-y divide-gray-200">
+              {availableDonations.length === 0 && <li className="p-6 text-gray-500 text-center">No active donations nearby.</li>}
+              {availableDonations.map(don => {
+                const urgencyStr = calculateUrgency(don.expiryTime);
+                const isExpiring = urgencyStr === 'Critical';
+                return (
+                  <li key={don.id} className="p-6 flex flex-col sm:flex-row justify-between items-start bg-white hover:bg-gray-50 transition gap-6">
+                    <div className="flex-1">
+                      <div className="text-lg font-bold text-gray-900">{don.quantityInMeals} Meals <span className="text-sm font-normal text-gray-500">by {don.donorName}</span></div>
+                      <div className="text-sm text-gray-600 mt-1">Category: {don.foodCategory} | Storage: {don.storageInfo}</div>
+                      <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg inline-block">
+                        <p className="text-xs font-semibold text-orange-700 uppercase mb-1">Donor Contact</p>
+                        <p className="font-semibold text-gray-900">{don.donorName}</p>
+                        {don.donorEmail && <p className="text-sm text-gray-600">📧 {don.donorEmail}</p>}
+                        {don.donorPhone && <p className="text-sm text-gray-600">📱 {don.donorPhone}</p>}
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <span className={`px-2 py-1 text-xs rounded-full font-semibold ${isExpiring ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                          {urgencyStr}
+                        </span>
+                      </div>
+                    </div>
+                    <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-sm transition whitespace-nowrap">
+                      Accept Allocation
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </div>
-        
+
         <div className="space-y-6">
-           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-              <h3 className="font-bold text-xl mb-4 text-gray-900">Your Active Allocations</h3>
-              <ul className="space-y-4">
-                 {activeDonations.map(d => (
-                    <li key={d.id} className="p-4 border border-gray-200 rounded-xl bg-gray-50">
-                       <span className="font-bold block text-gray-900">{d.quantityInMeals} Meals from {d.donorName}</span>
-                       <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
-                       <div className="text-sm text-gray-600 mb-2">
-                         {d.donorEmail && <p>📧 {d.donorEmail}</p>}
-                         {d.donorPhone && <p>📱 {d.donorPhone}</p>}
-                       </div>
-                       <div className="space-y-2 mt-4">
-                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                             Status: {d.status.replace('_', ' ')}
-                           </span>
-                           {d.status === 'reserved' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Picked Up
-                               </button>
-                           )}
-                           {d.status === 'picked_up' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Delivered
-                               </button>
-                           )}
-                       </div>
-                    </li>
-                 ))}
-                 {activeDonations.length === 0 && (
-                   <span className="text-sm text-gray-500">No active allocations right now.</span>
-                 )}
-              </ul>
-           </div>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+            <h3 className="font-bold text-xl mb-4 text-gray-900">Your Active Allocations</h3>
+            <ul className="space-y-4">
+              {activeDonations.map(d => (
+                <li key={d.id} className="p-4 border border-gray-200 rounded-xl bg-gray-50">
+                  <span className="font-bold block text-gray-900">{d.quantityInMeals} Meals from {d.donorName}</span>
+                  <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    {d.donorEmail && <p>📧 {d.donorEmail}</p>}
+                    {d.donorPhone && <p>📱 {d.donorPhone}</p>}
+                  </div>
+                  <div className="space-y-2 mt-4">
+                    <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                      Status: {d.status.replace('_', ' ')}
+                    </span>
+                    {d.status === 'reserved' && (
+                      <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mt-2">
+                        Mark as Picked Up
+                      </button>
+                    )}
+                    {d.status === 'picked_up' && (
+                      <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2">
+                        Mark as Delivered
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+              {activeDonations.length === 0 && (
+                <span className="text-sm text-gray-500">No active allocations right now.</span>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -340,11 +340,10 @@ export default function OrganizationsDashboard() {
                 <button
                   key={filter}
                   onClick={() => setHistoryFilter(filter as any)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    historyFilter === filter
-                      ? 'bg-brand-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${historyFilter === filter
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   {filter === 'all' ? 'All Time' : filter === '7days' ? 'Last 7 Days' : 'Last 30 Days'}
                 </button>
@@ -397,9 +396,8 @@ export default function OrganizationsDashboard() {
                       </div>
                     </div>
                     <div
-                      className={`flex-shrink-0 text-gray-400 transition-transform ${
-                        expandedHistory === donation.id ? 'rotate-180' : ''
-                      }`}
+                      className={`flex-shrink-0 text-gray-400 transition-transform ${expandedHistory === donation.id ? 'rotate-180' : ''
+                        }`}
                     >
                       ▼
                     </div>
@@ -443,6 +441,7 @@ export default function OrganizationsDashboard() {
           </div>
         )}
       </div>
+
       {acceptingDonation && (
         <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
