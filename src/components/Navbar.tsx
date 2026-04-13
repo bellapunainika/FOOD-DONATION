@@ -98,61 +98,17 @@ export default function Navbar() {
                     </button>
 
                     {profileMenuOpen && (
-                      <div className="absolute right-0 top-full mt-3 w-80 bg-white border border-gray-200 rounded-3xl shadow-xl p-4 z-50">
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-500">Profile Details</p>
-                          <p className="mt-2 text-base font-semibold text-gray-900">
-                            {userProfile?.fullName || userProfile?.organizationName || currentUser.email}
-                          </p>
-                          <p className="text-sm text-gray-500">{userProfile?.role || 'User'}</p>
-                        </div>
-
-                        <div className="space-y-3 text-sm text-gray-700">
-                          <div>
-                            <span className="font-semibold text-gray-900">Email:</span>{' '}
-                            {currentUser?.email || 'Not available'}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-gray-900">Phone:</span>{' '}
-                            {userProfile?.phoneNumber || 'Not added'}
-                          </div>
-                          {userProfile?.organizationName && (
-                            <div>
-                              <span className="font-semibold text-gray-900">Organization:</span>{' '}
-                              {userProfile.organizationName}
-                            </div>
-                          )}
-                          {userProfile?.location?.address && (
-                            <div>
-                              <span className="font-semibold text-gray-900">Address:</span>{' '}
-                              {userProfile.location.address}
-                              {userProfile.location.city ? `, ${userProfile.location.city}` : ''}
-                            </div>
-                          )}
-                          {userProfile?.donorType && (
-                            <div>
-                              <span className="font-semibold text-gray-900">Donor Type:</span>{' '}
-                              {userProfile.donorType}
-                            </div>
-                          )}
-                          {userProfile?.organizationsRegNumber && (
-                            <div>
-                              <span className="font-semibold text-gray-900">organizations Reg:</span>{' '}
-                              {userProfile.organizationsRegNumber}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-4 flex gap-2">
+                      <div className="absolute right-0 top-full mt-3 w-64 bg-white border border-gray-200 rounded-3xl shadow-xl p-4 z-50">
+                        <div className="flex flex-col gap-2">
                           <button
                             type="button"
                             onClick={() => {
                               setProfileMenuOpen(false);
-                              navigate('/onboarding');
+                              navigate('/profile');
                             }}
                             className="flex-1 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition"
                           >
-                            Edit profile
+                            View Profile
                           </button>
                           <button
                             type="button"
