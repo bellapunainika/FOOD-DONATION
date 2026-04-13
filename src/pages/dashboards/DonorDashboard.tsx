@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
@@ -28,8 +28,13 @@ export default function DonorDashboard() {
     const q = query(collection(db, 'donations'), where('donorId', '==', userProfile.uid));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const docs: FoodDonation[] = [];
-      querySnapshot.forEach((doc) => {
-        docs.push({ id: doc.id, ...doc.data() } as FoodDonation);
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data() as FoodDonation;
+        if (data.status === 'available' && data.expiryTime < Date.now()) {
+            data.status = 'expired';
+            updateDoc(doc(db, 'donations', docSnap.id), { status: 'expired' });
+        }
+        docs.push({ id: docSnap.id, ...data });
       });
       docs.sort((a, b) => b.createdAt - a.createdAt);
       setDonations(docs);
@@ -89,16 +94,16 @@ export default function DonorDashboard() {
   const totalMealsDonated = donations.filter(d => d.status === 'delivered').reduce((acc, curr) => acc + curr.quantityInMeals, 0);
 
   const getFilteredHistory = () => {
-    const delivered = donations.filter(d => d.status === 'delivered');
+    const closed = donations.filter(d => d.status === 'delivered' || d.status === 'expired');
     const now = Date.now();
     
     switch(historyFilter) {
       case '7days':
-        return delivered.filter(d => (now - d.createdAt) <= 7 * 24 * 60 * 60 * 1000);
+        return closed.filter(d => (now - d.createdAt) <= 7 * 24 * 60 * 60 * 1000);
       case '30days':
-        return delivered.filter(d => (now - d.createdAt) <= 30 * 24 * 60 * 60 * 1000);
+        return closed.filter(d => (now - d.createdAt) <= 30 * 24 * 60 * 60 * 1000);
       default:
-        return delivered;
+        return closed;
     }
   };
 
@@ -203,15 +208,8 @@ export default function DonorDashboard() {
                         </div>
                       </div>
                       {donation.status === 'available' && (
-                        <div className="mt-2 text-sm text-gray-500">
-                          Expires in: {(() => {
-                            const hoursLeft = Math.max(0, Math.floor((donation.expiryTime - Date.now()) / (1000 * 60 * 60)));
-                            const days = Math.floor(hoursLeft / 24);
-                            const hours = hoursLeft % 24;
-                            if (days > 0 && hours > 0) return `${days} day(s) ${hours} hour(s)`;
-                            if (days > 0) return `${days} day(s)`;
-                            return `${hoursLeft} hour(s)`;
-                          })()}
+                        <div className="mt-2 text-sm text-gray-500 font-medium">
+                          Expires on: <span className="text-gray-900">{new Date(donation.expiryTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
                         </div>
                       )}
                       {donation.status !== 'available' && (
@@ -300,14 +298,14 @@ export default function DonorDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-shrink-0 h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="text-green-600" size={24} />
+                        <div className={`flex-shrink-0 h-12 w-12 ${donation.status === 'expired' ? 'bg-gray-100' : 'bg-green-100'} rounded-full flex items-center justify-center`}>
+                          {donation.status === 'expired' ? <AlertCircle className="text-gray-500" size={24} /> : <CheckCircle className="text-green-600" size={24} />}
                         </div>
                         <div className="flex-1">
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className={`text-lg font-bold ${donation.status === 'expired' ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
                             {donation.quantityInMeals} Meals - {donation.foodType}
                             {donation.foodCategory === 'Both' && donation.vegQuantity !== undefined && donation.nonVegQuantity !== undefined && (
-                              <span className="text-sm font-normal text-gray-500 ml-2 inline-block">({donation.vegQuantity} Veg, {donation.nonVegQuantity} Non-Veg)</span>
+                              <span className="text-sm font-normal ml-2 inline-block">({donation.vegQuantity} Veg, {donation.nonVegQuantity} Non-Veg)</span>
                             )}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -316,9 +314,15 @@ export default function DonorDashboard() {
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                          ✓ Delivered
-                        </span>
+                        {donation.status === 'expired' ? (
+                          <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded-full flex items-center gap-1 border border-gray-200">
+                            <AlertCircle size={12} /> Expired (Auto-removed)
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            ✓ Delivered
+                          </span>
+                        )}
                         {donation.organizationName && (
                           <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full flex items-center gap-1">
                             <Users size={12} /> {donation.organizationName}
