@@ -36,7 +36,6 @@ export default function VolunteerDashboard() {
   const [takeNonVegQuantity, setTakeNonVegQuantity] = useState<number>(0);
   const [isAccepting, setIsAccepting] = useState(false);
   
-  // Availability toggle state
   const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
   const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
 
@@ -606,6 +605,7 @@ export default function VolunteerDashboard() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

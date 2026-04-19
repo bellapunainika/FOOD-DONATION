@@ -41,6 +41,15 @@ export interface UserProfile {
   lastAvailabilityToggle?: number; // Timestamp of last toggle
 }
 
+export interface RawMaterial {
+  name: string;
+  quantity: number;
+  unit: string;
+  expiryDate: number; // timestamp
+  storageType: string;
+  notes: string;
+}
+
 export interface FoodDonation {
   id?: string;
   donorId: string;
@@ -64,6 +73,7 @@ export interface FoodDonation {
   };
   foodImageUrl?: string;
   specialInstructions?: string;
+  rawMaterials?: RawMaterial[];
   // Organization details (when accepted by an organization)
   reservedByorganizationsId?: string;
   organizationName?: string;

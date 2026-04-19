@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
-import { Clock, AlertCircle, CheckCircle, Package, Trash2, Calendar, Users, MapPin, Heart } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, Package, Trash2, Users, Heart, Plus, Minus } from 'lucide-react';
 
 export default function DonorDashboard() {
   const { userProfile } = useAuth();
@@ -22,6 +22,32 @@ export default function DonorDashboard() {
   const [expiryValue, setExpiryValue] = useState<number>(4);
   const [expiryUnit, setExpiryUnit] = useState<'Hours' | 'Days'>('Hours');
   const [storageInfo, setStorageInfo] = useState<'Room temp' | 'Refrigerated'>('Room temp');
+  
+  // Raw Ingredients State
+  const [rawMaterials, setRawMaterials] = useState<any[]>([]);
+
+  const addRawMaterial = () => {
+    setRawMaterials([...rawMaterials, {
+      name: '',
+      quantity: 1,
+      unit: 'kg',
+      expiryDate: '',
+      storageType: 'Room temp',
+      notes: ''
+    }]);
+  };
+
+  const removeRawMaterial = (index: number) => {
+    const newMaterials = [...rawMaterials];
+    newMaterials.splice(index, 1);
+    setRawMaterials(newMaterials);
+  };
+
+  const updateRawMaterial = (index: number, field: string, value: any) => {
+    const newMaterials = [...rawMaterials];
+    newMaterials[index][field] = value;
+    setRawMaterials(newMaterials);
+  };
 
   useEffect(() => {
     if (!userProfile?.uid) return;
@@ -55,6 +81,34 @@ export default function DonorDashboard() {
         finalQuantity = vegQuantity + nonVegQuantity;
       }
       
+      if (foodType === 'Raw Ingredients' && rawMaterials.length === 0) {
+        toast.error('Please add at least one raw material details.');
+        return;
+      }
+      
+      // Process raw materials dates and check validity
+      const processedRawMaterials = rawMaterials.map(rm => {
+        const time = rm.expiryDate ? new Date(rm.expiryDate).getTime() : now + (7 * 24 * 60 * 60 * 1000);
+        // We ensure we give them until the END of the selected day just in case
+        return {
+          ...rm,
+          expiryDate: time
+        };
+      });
+
+      if (foodType === 'Raw Ingredients') {
+        const invalidDates = processedRawMaterials.some(rm => rm.expiryDate < now);
+        if (invalidDates) {
+          toast.error('Expiry date cannot be in the past. Please select valid future dates.');
+          return;
+        }
+      }
+
+      // If raw ingredients, we derive the overall donation expiry from the *earliest* expiring product
+      const finalExpiry = foodType === 'Raw Ingredients' 
+        ? Math.min(...processedRawMaterials.map(rm => rm.expiryDate)) 
+        : expiry;
+      
       const newDonation: Omit<FoodDonation, 'id'> = {
         donorId: userProfile.uid,
         donorName: userProfile.organizationName || userProfile.fullName || 'Anonymous Donor',
@@ -66,11 +120,12 @@ export default function DonorDashboard() {
         quantityInMeals: finalQuantity,
         ...(foodCategory === 'Both' && { vegQuantity, nonVegQuantity }),
         preparedTime: now,
-        expiryTime: expiry,
+        expiryTime: finalExpiry,
         storageInfo,
         hygieneChecklist: { freshlyCooked: true, covered: true, safePackaging: true }, // Simplified for MVP
         location: userProfile.location!,
-        createdAt: now
+        createdAt: now,
+        ...(foodType === 'Raw Ingredients' && { rawMaterials: processedRawMaterials })
       };
 
       await addDoc(collection(db, 'donations'), newDonation);
@@ -392,6 +447,7 @@ export default function DonorDashboard() {
         )}
       </div>
 
+
       {showAddModal && (
         <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -419,40 +475,110 @@ export default function DonorDashboard() {
                       <option>Raw Ingredients</option>
                     </select>
                   </div>
-                  {foodCategory === 'Both' ? (
-                    <div className="grid grid-cols-2 gap-4">
+                  {foodType !== 'Raw Ingredients' && (
+                    <>
+                      {foodCategory === 'Both' ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Veg Quantity (Meals)</label>
+                            <input type="number" min="1" required value={vegQuantity} onChange={e => setVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Non-Veg Quantity (Meals)</label>
+                            <input type="number" min="1" required value={nonVegQuantity} onChange={e => setNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Quantity (Number of Meals)</label>
+                          <input type="number" min="1" required value={quantityInMeals} onChange={e => setQuantityInMeals(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                        </div>
+                      )}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Veg Quantity (Meals)</label>
-                        <input type="number" min="1" required value={vegQuantity} onChange={e => setVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                        <label className="block text-sm font-medium text-gray-700">Expires In</label>
+                        <div className="mt-1 flex space-x-2">
+                           <input type="number" min="1" required value={expiryValue} onChange={e => setExpiryValue(parseInt(e.target.value) || 0)} className="flex-1 block w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500 sm:text-sm" />
+                           <select value={expiryUnit} onChange={e => setExpiryUnit(e.target.value as any)} className="block w-28 pl-3 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                             <option>Hours</option>
+                             <option>Days</option>
+                           </select>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Non-Veg Quantity (Meals)</label>
-                        <input type="number" min="1" required value={nonVegQuantity} onChange={e => setNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                       <div>
+                        <label className="block text-sm font-medium text-gray-700">Storage Info</label>
+                        <select value={storageInfo} onChange={e => setStorageInfo(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
+                          <option>Room temp</option>
+                          <option>Refrigerated</option>
+                        </select>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Quantity (Number of Meals)</label>
-                      <input type="number" min="1" required value={quantityInMeals} onChange={e => setQuantityInMeals(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500" />
+                    </>
+                  )}
+                  
+                  {foodType === 'Raw Ingredients' && (
+                    <div className="border border-brand-200 bg-brand-50 rounded-xl p-4 mt-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-md font-bold text-gray-900">Raw Materials Details</h4>
+                        <button type="button" onClick={addRawMaterial} className="flex items-center gap-1 text-sm bg-brand-600 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 transition">
+                          <Plus size={16} /> Add 
+                        </button>
+                      </div>
+                      
+                      {rawMaterials.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center py-4 bg-white rounded-lg border border-gray-200">Please add at least one material.</p>
+                      ) : (
+                        <div className="space-y-4">
+                          {rawMaterials.map((material, index) => (
+                            <div key={index} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative group">
+                              <button type="button" onClick={() => removeRawMaterial(index)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 p-1.5 rounded-full hover:bg-red-200 shadow-sm opacity-0 group-hover:opacity-100 transition">
+                                <Minus size={14} />
+                              </button>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Material Name <span className="text-red-500">*</span></label>
+                                  <input type="text" required placeholder="e.g. Rice, Potatoes" value={material.name} onChange={e => updateRawMaterial(index, 'name', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-brand-500 focus:border-brand-500" />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Quantity <span className="text-red-500">*</span></label>
+                                  <div className="flex flex-row space-x-2">
+                                    <input type="number" min="0.1" step="0.1" required value={material.quantity} onChange={e => updateRawMaterial(index, 'quantity', parseFloat(e.target.value))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-brand-500 focus:border-brand-500" />
+                                    <select value={material.unit} onChange={e => updateRawMaterial(index, 'unit', e.target.value)} className="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:ring-brand-500 focus:border-brand-500 bg-gray-50">
+                                      <option>kg</option>
+                                      <option>g</option>
+                                      <option>L</option>
+                                      <option>ml</option>
+                                      <option>pieces</option>
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Expiry Date <span className="text-red-500">*</span></label>
+                                  <input type="date" required value={material.expiryDate} onChange={e => updateRawMaterial(index, 'expiryDate', e.target.value)} min={new Date().toISOString().split('T')[0]} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-brand-500 focus:border-brand-500" />
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Storage Needs</label>
+                                  <select value={material.storageType} onChange={e => updateRawMaterial(index, 'storageType', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-brand-500 focus:border-brand-500 bg-white">
+                                    <option>Room temp</option>
+                                    <option>Refrigerated</option>
+                                    <option>Frozen</option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Notes (Optional)</label>
+                                  <input type="text" placeholder="Brand, condition..." value={material.notes} onChange={e => updateRawMaterial(index, 'notes', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-brand-500 focus:border-brand-500" />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Expires In</label>
-                    <div className="mt-1 flex space-x-2">
-                       <input type="number" min="1" required value={expiryValue} onChange={e => setExpiryValue(parseInt(e.target.value) || 0)} className="flex-1 block w-full border border-gray-300 rounded-xl px-3 py-3 focus:ring-brand-500 focus:border-brand-500 sm:text-sm" />
-                       <select value={expiryUnit} onChange={e => setExpiryUnit(e.target.value as any)} className="block w-28 pl-3 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
-                         <option>Hours</option>
-                         <option>Days</option>
-                       </select>
-                    </div>
-                  </div>
-                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Storage Info</label>
-                    <select value={storageInfo} onChange={e => setStorageInfo(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
-                      <option>Room temp</option>
-                      <option>Refrigerated</option>
-                    </select>
-                  </div>
+
                   <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                     <button type="submit" className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-3 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:col-start-2 sm:text-sm">
                       Post Donation
