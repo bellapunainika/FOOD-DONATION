@@ -92,32 +92,32 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-[80vh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl w-full mx-auto bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+      <div className="max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Complete Your Profile</h2>
-          <p className="text-gray-600 mt-2">Just a few more details to get you started as a {userProfile.role}</p>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Complete Your Profile</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Just a few more details to get you started as a {userProfile.role}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {userProfile.role === 'volunteer' ? 'Full Name' : 'Organization / Full Name'}
               </label>
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
               <input
                 type="tel"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
@@ -126,23 +126,23 @@ export default function Onboarding() {
 
           <div>
             <div className="flex justify-between items-end mb-1">
-              <label className="block text-sm font-medium text-gray-700">Full Address</label>
-              <button type="button" onClick={getLocation} className="text-sm text-brand-600 font-bold hover:underline">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Address</label>
+              <button type="button" onClick={getLocation} className="text-sm text-brand-600 dark:text-brand-400 font-bold hover:underline">
                 Auto-detect
               </button>
             </div>
             <input
               type="text"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none mb-4"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none mb-4"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
-            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
             <input
               type="text"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
               value={city}
               onChange={(e) => setCity(e.target.value)}
             />
@@ -150,9 +150,9 @@ export default function Onboarding() {
 
           {userProfile.role === 'donor' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type of Donor</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type of Donor</label>
               <select
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none bg-white"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
                 value={donorType}
                 onChange={(e) => setDonorType(e.target.value as 'Individual' | 'Restaurant' | 'Catering Service' | 'Event')}
               >
@@ -166,18 +166,18 @@ export default function Onboarding() {
 
           {userProfile.role === 'organizations' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Government organizations Registration Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Government organizations Registration Number</label>
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
                 value={organizationsReg}
                 onChange={(e) => setorganizationsReg(e.target.value)}
               />
             </div>
           )}
 
-          <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
+          <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
             <input
               type="checkbox"
               id="terms"
@@ -186,7 +186,7 @@ export default function Onboarding() {
               onChange={(e) => setAgreed(e.target.checked)}
               className="w-5 h-5 text-brand-600 rounded focus:ring-brand-500 border-gray-300"
             />
-            <label htmlFor="terms" className="text-sm text-gray-700">
+            <label htmlFor="terms" className="text-sm text-gray-700 dark:text-gray-300">
               I agree to the Terms & Conditions and certify that all details provided are true. 
               (For volunteers/donors, I ensure food safety guidelines are followed).
             </label>

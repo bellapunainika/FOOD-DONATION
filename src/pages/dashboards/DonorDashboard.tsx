@@ -185,7 +185,7 @@ export default function DonorDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="md:flex md:items-center md:justify-between mb-8">
         <div className="flex-1 min-w-0">
-          <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:truncate">
+          <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate">
             Donor Dashboard
           </h2>
         </div>
@@ -201,24 +201,24 @@ export default function DonorDashboard() {
 
       {/* Stats row */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-        <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-5">
-          <dt className="text-sm font-medium text-gray-500 truncate">Total Listings</dt>
-          <dd className="mt-1 text-3xl font-semibold text-gray-900">{donations.length}</dd>
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 p-5 transition-colors">
+          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Listings</dt>
+          <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{donations.length}</dd>
         </div>
-        <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-5">
-          <dt className="text-sm font-medium text-gray-500 truncate">Active Donations</dt>
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 p-5 transition-colors">
+          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Donations</dt>
           <dd className="mt-1 text-3xl font-semibold text-brand-600">
             {donations.filter(d => d.status === 'available' || d.status === 'reserved').length}
           </dd>
         </div>
-        <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-5">
-          <dt className="text-sm font-medium text-gray-500 truncate">Meals Successfully Delivered</dt>
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-xl border border-gray-100 dark:border-gray-700 p-5 transition-colors">
+          <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Meals Successfully Delivered</dt>
           <dd className="mt-1 text-3xl font-semibold text-green-600">{totalMealsDonated}</dd>
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-xl">
-        <ul className="divide-y divide-gray-200">
+      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl border border-gray-100 dark:border-gray-700 transition-colors">
+        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {activeDonations.length === 0 ? (
             <li className="p-8 text-center text-gray-500">No donations listed yet. Click "Add Food Donation" to get started.</li>
           ) : (
@@ -263,8 +263,8 @@ export default function DonorDashboard() {
                         </div>
                       </div>
                       {donation.status === 'available' && (
-                        <div className="mt-2 text-sm text-gray-500 font-medium">
-                          Expires on: <span className="text-gray-900">{new Date(donation.expiryTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
+                          Expires on: <span className="text-gray-900 dark:text-white">{new Date(donation.expiryTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
                         </div>
                       )}
                       {donation.status !== 'available' && (
@@ -309,11 +309,11 @@ export default function DonorDashboard() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Heart className="text-red-500" size={28} />
                 Your Impact History
               </h3>
-              <p className="text-sm text-gray-500 mt-1">Completed donations and happy recipients</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Completed donations and happy recipients</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               {['all', '7days', '30days'].map(filter => (
@@ -323,7 +323,7 @@ export default function DonorDashboard() {
                   className={`px-4 py-2 rounded-lg font-medium transition ${
                     historyFilter === filter
                       ? 'bg-brand-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   {filter === 'all' ? 'All Time' : filter === '7days' ? 'Last 7 Days' : 'Last 30 Days'}
@@ -348,7 +348,7 @@ export default function DonorDashboard() {
               >
                 <div
                   onClick={() => setExpandedHistory(expandedHistory === donation.id ? null : (donation.id || null))}
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition"
+                  className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -357,7 +357,7 @@ export default function DonorDashboard() {
                           {donation.status === 'expired' ? <AlertCircle className="text-gray-500" size={24} /> : <CheckCircle className="text-green-600" size={24} />}
                         </div>
                         <div className="flex-1">
-                          <p className={`text-lg font-bold ${donation.status === 'expired' ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                          <p className={`text-lg font-bold ${donation.status === 'expired' ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-white'}`}>
                             {donation.quantityInMeals} Meals - {donation.foodType}
                             {donation.foodCategory === 'Both' && donation.vegQuantity !== undefined && donation.nonVegQuantity !== undefined && (
                               <span className="text-sm font-normal ml-2 inline-block">({donation.vegQuantity} Veg, {donation.nonVegQuantity} Non-Veg)</span>
@@ -396,11 +396,11 @@ export default function DonorDashboard() {
                 </div>
 
                 {expandedHistory === donation.id && (
-                  <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-2">📍 Donated</p>
-                        <p className="text-sm text-gray-900 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">📍 Donated</p>
+                        <p className="text-sm text-gray-900 dark:text-white font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
                       </div>
                       {donation.organizationName && (
                         <div>
@@ -453,23 +453,23 @@ export default function DonorDashboard() {
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setShowAddModal(false)}></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-2xl font-bold leading-6 text-gray-900 mb-6" id="modal-title">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full transition-colors">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-2xl font-bold leading-6 text-gray-900 dark:text-white mb-6" id="modal-title">
                   Post Food Donation
                 </h3>
                 <form onSubmit={handleCreateDonation} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Food Category</label>
-                    <select value={foodCategory} onChange={e => setFoodCategory(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Food Category</label>
+                    <select value={foodCategory} onChange={e => setFoodCategory(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
                       <option>Veg</option>
                       <option>Non-Veg</option>
                       <option>Both</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Food Type</label>
-                    <select value={foodType} onChange={e => setFoodType(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Food Type</label>
+                    <select value={foodType} onChange={e => setFoodType(e.target.value as any)} className="mt-1 block w-full pl-3 pr-10 py-3 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm rounded-xl border">
                       <option>Cooked</option>
                       <option>Packaged</option>
                       <option>Raw Ingredients</option>
@@ -583,7 +583,7 @@ export default function DonorDashboard() {
                     <button type="submit" className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-3 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:col-start-2 sm:text-sm">
                       Post Donation
                     </button>
-                    <button type="button" onClick={() => setShowAddModal(false)} className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:col-start-1 sm:text-sm">
+                    <button type="button" onClick={() => setShowAddModal(false)} className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-3 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:col-start-1 sm:text-sm">
                       Cancel
                     </button>
                   </div>

@@ -2,20 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===================================================
+   ROOT LAYOUT — Ensures no white gaps on scroll
+   =================================================== */
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+}
+
 @layer base {
-  body {
-    @apply text-slate-800 bg-slate-50 antialiased font-sans overflow-x-hidden;
+  html {
+    @apply scroll-smooth;
   }
-  
-  /* Premium button interactions */
+
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100
+           antialiased font-sans overflow-x-hidden transition-colors duration-300;
+  }
+
+  /* Smooth button interactions */
   button:not(:disabled) {
     @apply transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform;
   }
-  
+
   button:not(:disabled):hover {
     @apply scale-[1.03] shadow-[0_8px_30px_rgb(0,0,0,0.12)];
   }
-  
+
   button:not(:disabled):active {
     @apply scale-[0.97] shadow-sm;
     transition-duration: 150ms;
@@ -25,43 +40,44 @@
   a {
     @apply transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] inline-block;
   }
-  
+
   /* Inputs smooth focus interactions */
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     @apply transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] outline-none will-change-transform;
   }
-  
-  input:focus, select:focus, textarea:focus {
-    @apply scale-[1.01] shadow-[0_0_0_4px_rgba(34,197,94,0.15)] border-brand-500 bg-white;
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply scale-[1.01] shadow-[0_0_0_4px_rgba(34,197,94,0.15)] border-brand-500;
   }
 }
 
 @layer components {
-  /* Globably lift and animate major components (Cards, panels) */
-  div[class*="bg-white rounded-3xl"],
-  div[class*="bg-white rounded-xl"],
-  div[class*="bg-white overflow-hidden shadow"],
-  div[class*="bg-white shadow overflow-hidden"] {
+  /* Globally animate themed cards */
+  .themed-card {
     @apply transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform;
     animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  div[class*="bg-white rounded-3xl"]:hover,
-  div[class*="bg-white rounded-xl"]:hover,
-  div[class*="bg-white overflow-hidden shadow"]:hover,
-  div[class*="bg-white shadow overflow-hidden"]:hover {
-    @apply -translate-y-1 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)];
+  .themed-card:hover {
+    @apply -translate-y-1 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.12)];
   }
 
-  /* Prevent elements from double lifting or breaking format */
-  .map-container, .map-container:hover {
+  /* Map container — must not animate or it breaks Leaflet */
+  .map-container,
+  .map-container:hover {
     transform: none !important;
     box-shadow: none !important;
     transition: none !important;
   }
 }
 
-/* Base keyframes for page entry */
+/* ===================================================
+   KEYFRAMES
+   =================================================== */
 @keyframes slideUpFade {
   0% {
     opacity: 0;
@@ -73,6 +89,9 @@
   }
 }
 
+/* ===================================================
+   MAP CONTAINER
+   =================================================== */
 .map-container {
   height: 100%;
   width: 100%;
@@ -87,7 +106,9 @@
   z-index: 0;
 }
 
-/* Loader */
+/* ===================================================
+   SPINNER / LOADER
+   =================================================== */
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
   width: 36px;

@@ -212,17 +212,17 @@ export default function OrganizationsDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:truncate">Organizations Dashboard</h2>
-        <p className="mt-1 text-gray-500">Find nearby active donations, pick them up, and distribute them to people in need.</p>
+        <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate">Organizations Dashboard</h2>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">Find nearby active donations, pick them up, and distribute them to people in need.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-            <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Total People Served</span>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center items-center text-center transition-colors">
+            <span className="text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider text-sm mb-2">Total People Served</span>
             <div className="text-6xl font-black text-brand-600">{totalPeopleServed}</div>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center">
-            <span className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-2">Active Procurements</span>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center items-center text-center transition-colors">
+            <span className="text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider text-sm mb-2">Active Procurements</span>
             <div className="text-6xl font-black text-blue-600">
                {acceptedDonations.filter(d => ['reserved', 'picked_up'].includes(d.status)).length}
             </div>
@@ -231,8 +231,8 @@ export default function OrganizationsDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 overflow-hidden">
-            <h3 className="font-bold text-xl mb-4 text-gray-900">Map - Available Donations</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 overflow-hidden transition-colors">
+            <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Map - Available Donations</h3>
             <div className="h-96 w-full rounded-2xl overflow-hidden z-0">
                <MapContainer center={[28.6139, 77.2090]} zoom={11} className="w-full h-full z-0">
                  <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
@@ -288,12 +288,12 @@ export default function OrganizationsDashboard() {
         </div>
         
         <div className="space-y-6">
-           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-              <h3 className="font-bold text-xl mb-4 text-gray-900">Your Active Allocations</h3>
+           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
+              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Your Active Allocations</h3>
               <ul className="space-y-4">
                  {activeDonations.map(d => (
-                    <li key={d.id} className="p-4 border border-gray-200 rounded-xl bg-gray-50">
-                       <span className="font-bold block text-gray-900">{d.quantityInMeals} Meals from {d.donorName}</span>
+                    <li key={d.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
+                       <span className="font-bold block text-gray-900 dark:text-white">{d.quantityInMeals} Meals from {d.donorName}</span>
                        <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
                        <div className="text-sm text-gray-600 mb-2">
                          {d.donorEmail && <p>📧 {d.donorEmail}</p>}
@@ -364,11 +364,11 @@ export default function OrganizationsDashboard() {
             {historyDonations.map((donation) => (
               <div
                 key={donation.id}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div
                   onClick={() => setExpandedHistory(expandedHistory === donation.id ? null : (donation.id || null))}
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition"
+                  className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -377,7 +377,7 @@ export default function OrganizationsDashboard() {
                           <CheckCircle className="text-green-600" size={24} />
                         </div>
                         <div className="flex-1">
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-lg font-bold text-gray-900 dark:text-white">
                             {donation.quantityInMeals} Meals - {donation.foodType}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -407,7 +407,7 @@ export default function OrganizationsDashboard() {
                 </div>
 
                 {expandedHistory === donation.id && (
-                  <div className="border-t border-gray-200 bg-gray-50 px-6 py-4">
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">📍 Received On</p>
@@ -449,9 +449,9 @@ export default function OrganizationsDashboard() {
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setAcceptingDonation(null)}></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-xl font-bold leading-6 text-gray-900 mb-4">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-xl font-bold leading-6 text-gray-900 dark:text-white mb-4">
                   Accept Allocation
                 </h3>
                 <div className="mb-4 text-sm text-gray-500">
@@ -478,7 +478,7 @@ export default function OrganizationsDashboard() {
                   <button disabled={isAccepting} onClick={confirmAcceptAllocation} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
                     {isAccepting ? 'Accepting...' : 'Confirm'}
                   </button>
-                  <button onClick={() => setAcceptingDonation(null)} className="flex-1 inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:text-sm">
+                  <button onClick={() => setAcceptingDonation(null)} className="flex-1 inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 sm:text-sm">
                     Cancel
                   </button>
                 </div>

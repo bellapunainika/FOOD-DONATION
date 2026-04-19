@@ -135,11 +135,11 @@ export default function Register() {
 
   if (waitingForVerification) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden">
-        <div className="max-w-md w-full mx-auto bg-white p-8 rounded-3xl shadow-xl z-10 border border-gray-100 text-center">
+      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-gray-950 relative overflow-hidden">
+        <div className="max-w-md w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl z-10 border border-gray-100 dark:border-gray-700 text-center transition-colors duration-300">
           <Heart className="w-16 h-16 text-brand-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Verify Your Email</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4">Verify Your Email</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
             We dispatched a secure verification link to <strong>{email}</strong>. 
             Please click the link in that email (don't forget to check your Spam folder) to proceed. 
             <br/><br/>
@@ -174,11 +174,11 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 relative overflow-hidden">
-      <div className="max-w-2xl w-full mx-auto bg-white p-8 rounded-3xl shadow-xl z-10 border border-gray-100">
+    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-gray-950 relative overflow-hidden">
+      <div className="max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl z-10 border border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-2">Join the Movement</h2>
-          <p className="text-gray-600">Choose how you want to make an impact today.</p>
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Join the Movement</h2>
+          <p className="text-gray-600 dark:text-gray-400">Choose how you want to make an impact today.</p>
         </div>
 
         {/* Role Selection */}
@@ -188,8 +188,8 @@ export default function Register() {
             onClick={() => setRole('donor')}
             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
               role === 'donor' 
-                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md ring-2 ring-blue-500 ring-offset-2' 
-                : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 text-gray-600'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-md ring-2 ring-blue-500 ring-offset-2' 
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 hover:bg-blue-50/50 text-gray-600 dark:text-gray-300'
             }`}
           >
             <Store className={`w-8 h-8 mb-2 ${role === 'donor' ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -202,8 +202,8 @@ export default function Register() {
             onClick={() => setRole('organizations')}
             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
               role === 'organizations' 
-                ? 'border-brand-500 bg-brand-50 text-brand-700 shadow-md ring-2 ring-brand-500 ring-offset-2' 
-                : 'border-gray-200 hover:border-brand-300 hover:bg-brand-50/50 text-gray-600'
+                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 shadow-md ring-2 ring-brand-500 ring-offset-2' 
+                : 'border-gray-200 dark:border-gray-600 hover:border-brand-300 hover:bg-brand-50/50 text-gray-600 dark:text-gray-300'
             }`}
           >
             <Heart className={`w-8 h-8 mb-2 ${role === 'organizations' ? 'text-brand-600' : 'text-gray-400'}`} />
@@ -216,8 +216,8 @@ export default function Register() {
             onClick={() => setRole('volunteer')}
             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
               role === 'volunteer' 
-                ? 'border-yellow-500 bg-yellow-50 text-yellow-700 shadow-md ring-2 ring-yellow-500 ring-offset-2' 
-                : 'border-gray-200 hover:border-yellow-300 hover:bg-yellow-50/50 text-gray-600'
+                ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 shadow-md ring-2 ring-yellow-500 ring-offset-2' 
+                : 'border-gray-200 dark:border-gray-600 hover:border-yellow-300 hover:bg-yellow-50/50 text-gray-600 dark:text-gray-300'
             }`}
           >
             <Navigation className={`w-8 h-8 mb-2 ${role === 'volunteer' ? 'text-yellow-600' : 'text-gray-400'}`} />
@@ -230,23 +230,23 @@ export default function Register() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
               <input
                 type="text"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar ID (12 digits)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Aadhar ID (12 digits)</label>
               <input
                 type="text"
                 required
                 maxLength={12}
                 placeholder="123412341234"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={aadharNumber}
                 onChange={(e) => setAadharNumber(e.target.value)}
               />
@@ -255,12 +255,12 @@ export default function Register() {
 
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
               <input
                 type="tel"
                 required
                 placeholder="+919999999999"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
@@ -269,11 +269,11 @@ export default function Register() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email address</label>
               <input
                 type="email"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -282,21 +282,21 @@ export default function Register() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
               <input
                 type="password"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
               <input
                 type="password"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -304,13 +304,13 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 required
                 placeholder="Enter address manually or auto-detect"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={locationStr}
                 onChange={(e) => {
                   setLocationStr(e.target.value);
@@ -320,7 +320,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={detectLocation}
-                className="flex items-center justify-center px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors shrink-0"
+                className="flex items-center justify-center px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors shrink-0"
                 title="Auto-detect Location"
               >
                 <MapPin className="w-5 h-5" />
@@ -340,16 +340,16 @@ export default function Register() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
             </div>
           </div>
           <button
             onClick={handleGoogle}
             disabled={!role}
-            className="mt-6 w-full flex justify-center items-center gap-3 py-3 px-4 border-2 border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-6 w-full flex justify-center items-center gap-3 py-3 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl shadow-sm text-sm font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -361,7 +361,7 @@ export default function Register() {
           </button>
         </div>
         
-        <p className="mt-8 text-center text-sm text-gray-600">
+        <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           Already have an account?{' '}
           <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-500">
             Log in instead
