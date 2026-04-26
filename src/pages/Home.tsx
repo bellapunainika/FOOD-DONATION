@@ -155,22 +155,22 @@ export default function Home() {
       </section>
 
       {/* About Us Section */}
-      <section className="py-24 bg-white relative">
+      <section className="py-24 bg-white dark:bg-gray-800 transition-colors duration-300 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
             <div className="mb-12 lg:mb-0">
-              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl mb-6">
+              <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-4xl mb-6">
                 About Our Mission
               </h2>
               <div className="w-20 h-2 bg-brand-500 rounded-full mb-8"></div>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 We believe that no one should go hungry while perfectly good food goes to waste. Our platform serves as a bridge, connecting those with surplus food to those who need it the most.
               </p>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 By bringing together generous restaurants, local businesses, dedicated organizations, and passionate volunteers, we ensure that fresh, nutritious meals are safely collected and delivered directly to the communities that need them.
               </p>
-              <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100">
-                <p className="text-lg text-brand-800 font-medium italic">
+              <div className="bg-brand-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-brand-100 dark:border-gray-600">
+                <p className="text-lg text-brand-800 dark:text-brand-300 font-medium italic">
                   "Together, we are not just sharing food—we are delivering hope, building community, and taking a stand against food insecurity."
                 </p>
               </div>
@@ -187,10 +187,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Map Section */}
-      <section className="flex-grow py-24 bg-slate-50 relative">
       {/* ── Network Map ── */}
-      <section className="py-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <section className="flex-grow py-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 mb-4">
