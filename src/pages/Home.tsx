@@ -154,6 +154,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* About Us Section */}
+      <section className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+            <div className="mb-12 lg:mb-0">
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl mb-6">
+                About Our Mission
+              </h2>
+              <div className="w-20 h-2 bg-brand-500 rounded-full mb-8"></div>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                We believe that no one should go hungry while perfectly good food goes to waste. Our platform serves as a bridge, connecting those with surplus food to those who need it the most.
+              </p>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                By bringing together generous restaurants, local businesses, dedicated organizations, and passionate volunteers, we ensure that fresh, nutritious meals are safely collected and delivered directly to the communities that need them.
+              </p>
+              <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                <p className="text-lg text-brand-800 font-medium italic">
+                  "Together, we are not just sharing food—we are delivering hope, building community, and taking a stand against food insecurity."
+                </p>
+              </div>
+            </div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+               <div className="absolute inset-0 bg-brand-600 mix-blend-multiply opacity-20 z-10 transition-opacity group-hover:opacity-10"></div>
+               <img 
+                 src="/campaign_poster.png" 
+                 alt="Food Donation Campaign" 
+                 className="w-full h-full object-cover object-center min-h-[450px] transition-transform duration-700 group-hover:scale-105" 
+               />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section className="flex-grow py-24 bg-slate-50 relative">
       {/* ── Network Map ── */}
       <section className="py-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
