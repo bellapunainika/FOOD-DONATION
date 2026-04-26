@@ -13,6 +13,7 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.donorId == request.auth.uid;
       // In a strict prod environment, we would validate that only organizationss can set reservedByorganizationsId
       allow update: if request.auth != null;
+      allow delete: if request.auth != null;
     }
   }
 }
