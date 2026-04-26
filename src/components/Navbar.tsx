@@ -40,7 +40,7 @@ export default function Navbar() {
               <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-full text-brand-600 dark:text-brand-400 transition-colors duration-300">
                 <Heart size={24} className="fill-brand-500" />
               </div>
-              <span className="font-bold text-xl text-gray-900 dark:text-white tracking-tight transition-colors duration-300">AI Feed Hunger</span>
+              <span className="font-bold text-xl text-gray-900 dark:text-gray-200 tracking-tight transition-colors duration-300">AI Feed Hunger</span>
             </Link>
           </div>
           
@@ -49,12 +49,12 @@ export default function Navbar() {
             
             {!currentUser ? (
               <>
-                <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300">
+                <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors duration-300">
                   Log in
                 </Link>
                 <Link 
                   to="/register" 
-                  className="bg-brand-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors shadow-sm"
+                  className="bg-brand-600 text-gray-100 px-4 py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors shadow-sm"
                 >
                   Sign up
                 </Link>
@@ -63,7 +63,7 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <Link 
                   to="/dashboard" 
-                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-300"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors duration-300"
                 >
                   Dashboard
                 </Link>
@@ -72,7 +72,7 @@ export default function Navbar() {
                 
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col items-end">
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white transition-colors duration-300">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
                       {userProfile?.fullName || userProfile?.organizationName || currentUser.email}
                     </span>
                     <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full font-medium uppercase tracking-wider transition-colors duration-300">
@@ -83,7 +83,7 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={() => setProfileMenuOpen((prev) => !prev)}
-                      className="h-10 w-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 border-2 border-white shadow-sm overflow-hidden transition hover:scale-[1.02]"
+                      className="h-10 w-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 border-2 border-white dark:border-gray-700 shadow-sm overflow-hidden transition hover:scale-[1.02]"
                       title="Profile"
                     >
                       {currentUser.photoURL ? (
@@ -109,7 +109,7 @@ export default function Navbar() {
                               setProfileMenuOpen(false);
                               navigate('/profile');
                             }}
-                            className="flex-1 rounded-xl bg-brand-600 text-white px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition"
+                            className="flex-1 rounded-xl bg-brand-600 text-gray-100 px-4 py-2 text-sm font-semibold hover:bg-brand-700 transition"
                           >
                             View Profile
                           </button>

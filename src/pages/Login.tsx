@@ -49,7 +49,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-100 dark:bg-brand-900/30 mb-4">
             <Heart className="text-brand-600 dark:text-brand-400" size={32} />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-200">
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -69,7 +69,7 @@ export default function Login() {
               type="email"
               required
               className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200
                          placeholder-gray-400 dark:placeholder-gray-500
                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               placeholder="you@example.com"
@@ -86,7 +86,7 @@ export default function Login() {
               type="password"
               required
               className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200
                          placeholder-gray-400 dark:placeholder-gray-500
                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               placeholder="••••••••"
@@ -99,7 +99,7 @@ export default function Login() {
             type="submit"
             disabled={loading}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm
-                       text-sm font-bold text-white bg-brand-600 hover:bg-brand-700
+                       text-sm font-bold text-gray-100 bg-brand-600 hover:bg-brand-700
                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500
                        disabled:opacity-50 transition-colors"
           >

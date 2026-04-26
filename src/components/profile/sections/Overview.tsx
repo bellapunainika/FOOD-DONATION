@@ -9,7 +9,7 @@ interface OverviewProps {
 
 const cardCls = 'bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all duration-300';
 const labelCls = 'text-gray-600 dark:text-gray-400 text-sm font-medium';
-const valueCls = 'text-gray-900 dark:text-white font-semibold';
+const valueCls = 'text-gray-900 dark:text-gray-200 font-semibold';
 
 export default function Overview({ user, stats }: OverviewProps) {
   const tagline = (): string => {
@@ -78,7 +78,7 @@ export default function Overview({ user, stats }: OverviewProps) {
 
       {/* About */}
       <div className={cardCls + ' !rounded-2xl'}>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">About You</h3>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 mb-4">About You</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
             { label: 'Full Name',         value: user.fullName },
@@ -90,7 +90,7 @@ export default function Overview({ user, stats }: OverviewProps) {
           ].filter(f => f.value).map(({ label, value }) => (
             <div key={label}>
               <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">{label}</p>
-              <p className="text-gray-900 dark:text-white font-semibold">{value}</p>
+              <p className="text-gray-900 dark:text-gray-200 font-semibold">{value}</p>
             </div>
           ))}
         </div>

@@ -54,7 +54,7 @@ export default function Verification({ user, onDocumentUpload, isLoading = false
 
       {/* ID Proof card */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
           <FileText className="text-brand-600 dark:text-brand-400" size={24} /> ID Proof
         </h3>
 
@@ -64,7 +64,7 @@ export default function Verification({ user, onDocumentUpload, isLoading = false
               <div className="flex items-center gap-3">
                 <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">ID Verified</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-200">ID Verified</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Uploaded on {new Date(user.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
@@ -79,7 +79,7 @@ export default function Verification({ user, onDocumentUpload, isLoading = false
             className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-brand-500 dark:hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors cursor-pointer"
           >
             <Upload className="mx-auto text-gray-400 dark:text-gray-500 mb-2" size={32} />
-            <p className="font-semibold text-gray-900 dark:text-white">Upload ID Proof</p>
+            <p className="font-semibold text-gray-900 dark:text-gray-200">Upload ID Proof</p>
             <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Accepted: Aadhar, Passport, Driving License</p>
             <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">Click or drag to upload (PDF, JPG, PNG)</p>
           </div>

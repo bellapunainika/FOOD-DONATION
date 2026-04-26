@@ -94,7 +94,7 @@ export default function Onboarding() {
     <div className="min-h-[80vh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Complete Your Profile</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-200">Complete Your Profile</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Just a few more details to get you started as a {userProfile.role}</p>
         </div>
 
@@ -107,7 +107,7 @@ export default function Onboarding() {
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
@@ -117,7 +117,7 @@ export default function Onboarding() {
               <input
                 type="tel"
                 required
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
@@ -134,7 +134,7 @@ export default function Onboarding() {
             <input
               type="text"
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none mb-4"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none mb-4"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -142,7 +142,7 @@ export default function Onboarding() {
             <input
               type="text"
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
               value={city}
               onChange={(e) => setCity(e.target.value)}
             />
@@ -152,7 +152,7 @@ export default function Onboarding() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type of Donor</label>
               <select
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
                 value={donorType}
                 onChange={(e) => setDonorType(e.target.value as 'Individual' | 'Restaurant' | 'Catering Service' | 'Event')}
               >
@@ -170,7 +170,7 @@ export default function Onboarding() {
               <input
                 type="text"
                 required
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
                 value={organizationsReg}
                 onChange={(e) => setorganizationsReg(e.target.value)}
               />
@@ -195,7 +195,7 @@ export default function Onboarding() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors disabled:opacity-50"
+            className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm font-bold text-gray-100 bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Finish Onboarding'}
           </button>

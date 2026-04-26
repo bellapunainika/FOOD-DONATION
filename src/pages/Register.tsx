@@ -135,10 +135,10 @@ export default function Register() {
 
   if (waitingForVerification) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-gray-950 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
         <div className="max-w-md w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl z-10 border border-gray-100 dark:border-gray-700 text-center transition-colors duration-300">
           <Heart className="w-16 h-16 text-brand-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4">Verify Your Email</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-gray-200 mb-4">Verify Your Email</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-8">
             We dispatched a secure verification link to <strong>{email}</strong>. 
             Please click the link in that email (don't forget to check your Spam folder) to proceed. 
@@ -164,7 +164,7 @@ export default function Register() {
               }
             }}
             disabled={loading}
-            className="w-full py-4 px-4 rounded-xl font-bold text-white bg-brand-600 hover:bg-brand-700 transition disabled:opacity-50"
+            className="w-full py-4 px-4 rounded-xl font-bold text-gray-100 bg-brand-600 hover:bg-brand-700 transition disabled:opacity-50"
           >
             {loading ? 'Checking...' : 'I have verified my email'}
           </button>
@@ -174,10 +174,10 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-gray-950 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
       <div className="max-w-2xl w-full mx-auto bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl z-10 border border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">Join the Movement</h2>
+          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-gray-200 mb-2">Join the Movement</h2>
           <p className="text-gray-600 dark:text-gray-400">Choose how you want to make an impact today.</p>
         </div>
 
@@ -234,7 +234,7 @@ export default function Register() {
               <input
                 type="text"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
@@ -246,7 +246,7 @@ export default function Register() {
                 required
                 maxLength={12}
                 placeholder="123412341234"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={aadharNumber}
                 onChange={(e) => setAadharNumber(e.target.value)}
               />
@@ -260,7 +260,7 @@ export default function Register() {
                 type="tel"
                 required
                 placeholder="+919999999999"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
@@ -273,7 +273,7 @@ export default function Register() {
               <input
                 type="email"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -286,7 +286,7 @@ export default function Register() {
               <input
                 type="password"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -296,7 +296,7 @@ export default function Register() {
               <input
                 type="password"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -310,7 +310,7 @@ export default function Register() {
                 type="text"
                 required
                 placeholder="Enter address manually or auto-detect"
-                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={locationStr}
                 onChange={(e) => {
                   setLocationStr(e.target.value);
@@ -331,7 +331,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading || !role}
-            className="w-full flex justify-center py-3 px-4 mt-6 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full flex justify-center py-3 px-4 mt-6 border border-transparent rounded-xl shadow-sm text-sm font-bold text-gray-100 bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Processing...' : 'Create Account'}
           </button>

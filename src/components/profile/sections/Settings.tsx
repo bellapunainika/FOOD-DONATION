@@ -10,7 +10,7 @@ interface SettingsProps {
   onPasswordChange?: (oldPassword: string, newPassword: string) => Promise<void>;
 }
 
-const inputCls = 'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-colors';
+const inputCls = 'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-colors';
 const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2';
 const cardCls  = 'bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300';
 
@@ -51,14 +51,14 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
     <div className="space-y-6">
       {/* Notifications */}
       <div className={cardCls}>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 mb-6 flex items-center gap-2">
           <Bell className="text-brand-600 dark:text-brand-400" size={24} /> Notification Preferences
         </h3>
         <div className="space-y-4">
           {NOTIF_ITEMS.map(({ id, label, desc }) => (
             <div key={id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
               <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white">{label}</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-200">{label}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{desc}</p>
               </div>
               <button
@@ -70,7 +70,7 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
             </div>
           ))}
         </div>
-        <button onClick={handleNotifSave} disabled={isSaving} className="mt-6 w-full px-4 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+        <button onClick={handleNotifSave} disabled={isSaving} className="mt-6 w-full px-4 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-gray-100 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
           <Check size={18} /> Save Preferences
         </button>
       </div>
@@ -78,7 +78,7 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
       {/* Volunteer Availability */}
       {user.role === 'volunteer' && (
         <div className={cardCls}>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 mb-6 flex items-center gap-2">
             <ToggleLeft className="text-brand-600 dark:text-brand-400" size={24} /> Availability
           </h3>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 p-4 mb-6">
@@ -95,11 +95,11 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
 
       {/* Password & Security */}
       <div className={cardCls}>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200 mb-4 flex items-center gap-2">
           <Lock className="text-brand-600 dark:text-brand-400" size={24} /> Password &amp; Security
         </h3>
         {!showPasswordForm ? (
-          <button onClick={() => setShowPasswordForm(true)} className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+          <button onClick={() => setShowPasswordForm(true)} className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-gray-100 rounded-lg font-medium transition-colors">
             Change Password
           </button>
         ) : (
@@ -112,7 +112,7 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
               <label className={labelCls}>New Password</label>
               <div className="relative">
                 <input type={showPassword ? 'text' : 'password'} value={passwordData.newPassword} onChange={e => setPasswordData(p => ({ ...p, newPassword: e.target.value }))} className={inputCls} placeholder="Min 8 characters" required />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
@@ -122,7 +122,7 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
               <input type="password" value={passwordData.confirmPassword} onChange={e => setPasswordData(p => ({ ...p, confirmPassword: e.target.value }))} className={inputCls} placeholder="Confirm new password" required />
             </div>
             <div className="flex gap-2">
-              <button type="submit" disabled={isChangingPassword} className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors">Update Password</button>
+              <button type="submit" disabled={isChangingPassword} className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-gray-100 rounded-lg font-medium transition-colors">Update Password</button>
               <button type="button" onClick={() => setShowPasswordForm(false)} className="flex-1 px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors">Cancel</button>
             </div>
           </form>
@@ -136,7 +136,7 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
       {/* Danger Zone */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-red-200 dark:border-red-800 p-6 transition-colors duration-300">
         <h3 className="text-xl font-bold text-red-900 dark:text-red-400 mb-4">Danger Zone</h3>
-        <button onClick={onLogout} className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+        <button onClick={onLogout} className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-gray-100 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
           <LogOut size={18} /> Logout from All Devices
         </button>
         <p className="text-xs text-red-700 dark:text-red-400 mt-3">This will log you out from your account on all devices.</p>

@@ -212,7 +212,7 @@ export default function OrganizationsDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate">Organizations Dashboard</h2>
+        <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-200 sm:truncate">Organizations Dashboard</h2>
         <p className="mt-1 text-gray-500 dark:text-gray-400">Find nearby active donations, pick them up, and distribute them to people in need.</p>
       </div>
 
@@ -232,7 +232,7 @@ export default function OrganizationsDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 overflow-hidden transition-colors">
-            <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Map - Available Donations</h3>
+            <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200">Map - Available Donations</h3>
             <div className="h-96 w-full rounded-2xl overflow-hidden z-0">
                <MapContainer center={[28.6139, 77.2090]} zoom={11} className="w-full h-full z-0">
                  <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
@@ -251,25 +251,25 @@ export default function OrganizationsDashboard() {
             </div>
           </div>
           
-          <div className="bg-white shadow overflow-hidden sm:rounded-xl">
-             <div className="px-4 py-5 border-b border-gray-200">
-               <h3 className="text-lg leading-6 font-medium text-gray-900">Priority Feed (Nearby & Expiring Soon)</h3>
+          <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl border border-gray-100 dark:border-gray-700 transition-colors">
+             <div className="px-4 py-5 border-b border-gray-200 dark:border-gray-700">
+               <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">Priority Feed (Nearby & Expiring Soon)</h3>
              </div>
-             <ul className="divide-y divide-gray-200">
-                {availableDonations.length === 0 && <li className="p-6 text-gray-500 text-center">No active donations nearby.</li>}
+             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {availableDonations.length === 0 && <li className="p-6 text-gray-500 dark:text-gray-400 text-center">No active donations nearby.</li>}
                 {availableDonations.map(don => {
                   const urgencyStr = calculateUrgency(don.expiryTime);
                   const isExpiring = urgencyStr === 'Critical';
                   return (
-                    <li key={don.id} className="p-6 flex flex-col sm:flex-row justify-between items-start bg-white hover:bg-gray-50 transition gap-6">
+                    <li key={don.id} className="p-6 flex flex-col sm:flex-row justify-between items-start bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition gap-6">
                        <div className="flex-1">
-                          <div className="text-lg font-bold text-gray-900">{don.quantityInMeals} Meals <span className="text-sm font-normal text-gray-500">by {don.donorName}</span></div>
-                          <div className="text-sm text-gray-600 mt-1">Category: {don.foodCategory} | Storage: {don.storageInfo}</div>
-                          <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg inline-block">
-                            <p className="text-xs font-semibold text-orange-700 uppercase mb-1">Donor Contact</p>
-                            <p className="font-semibold text-gray-900">{don.donorName}</p>
-                            {don.donorEmail && <p className="text-sm text-gray-600">📧 {don.donorEmail}</p>}
-                            {don.donorPhone && <p className="text-sm text-gray-600">📱 {don.donorPhone}</p>}
+                          <div className="text-lg font-bold text-gray-900 dark:text-gray-200">{don.quantityInMeals} Meals <span className="text-sm font-normal text-gray-500 dark:text-gray-400">by {don.donorName}</span></div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Category: {don.foodCategory} | Storage: {don.storageInfo}</div>
+                          <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg inline-block">
+                            <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase mb-1">Donor Contact</p>
+                            <p className="font-semibold text-gray-900 dark:text-gray-200">{don.donorName}</p>
+                            {don.donorEmail && <p className="text-sm text-gray-600 dark:text-gray-400">📧 {don.donorEmail}</p>}
+                            {don.donorPhone && <p className="text-sm text-gray-600 dark:text-gray-400">📱 {don.donorPhone}</p>}
                           </div>
                           <div className="mt-2 flex gap-2">
                              <span className={`px-2 py-1 text-xs rounded-full font-semibold ${isExpiring ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
@@ -277,7 +277,7 @@ export default function OrganizationsDashboard() {
                              </span>
                           </div>
                        </div>
-                       <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-sm transition whitespace-nowrap">
+                       <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-brand-600 hover:bg-brand-700 text-gray-100 rounded-xl shadow-sm transition whitespace-nowrap">
                           Accept Allocation
                        </button>
                     </li>
@@ -289,18 +289,18 @@ export default function OrganizationsDashboard() {
         
         <div className="space-y-6">
            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
-              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">Your Active Allocations</h3>
+              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200">Your Active Allocations</h3>
               <ul className="space-y-4">
                  {activeDonations.map(d => (
                     <li key={d.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
-                       <span className="font-bold block text-gray-900 dark:text-white">{d.quantityInMeals} Meals from {d.donorName}</span>
-                       <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
-                       <div className="text-sm text-gray-600 mb-2">
+                       <span className="font-bold block text-gray-900 dark:text-gray-200">{d.quantityInMeals} Meals from {d.donorName}</span>
+                       <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
+                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                          {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                          {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                        </div>
                        <div className="space-y-2 mt-4">
-                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
                              Status: {d.status.replace('_', ' ')}
                            </span>
                            {d.status === 'reserved' && (
@@ -329,11 +329,11 @@ export default function OrganizationsDashboard() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-200 flex items-center gap-2">
                 <Heart className="text-red-500" size={28} />
                 Your Delivery History
               </h3>
-              <p className="text-sm text-gray-500 mt-1">Successfully received and distributed donations</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Successfully received and distributed donations</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               {['all', '7days', '30days'].map(filter => (
@@ -342,8 +342,8 @@ export default function OrganizationsDashboard() {
                   onClick={() => setHistoryFilter(filter as any)}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
                     historyFilter === filter
-                      ? 'bg-brand-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-brand-600 text-gray-100'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   {filter === 'all' ? 'All Time' : filter === '7days' ? 'Last 7 Days' : 'Last 30 Days'}
@@ -354,10 +354,10 @@ export default function OrganizationsDashboard() {
         </div>
 
         {historyDonations.length === 0 ? (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-200 rounded-2xl p-12 text-center">
-            <Heart className="mx-auto text-blue-400 mb-4" size={48} />
-            <p className="text-gray-600 text-lg font-medium">No completed deliveries yet</p>
-            <p className="text-gray-500 text-sm mt-1">Donations appearing here will show your successful distributions</p>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border-2 border-dashed border-blue-200 dark:border-gray-600 rounded-2xl p-12 text-center">
+            <Heart className="mx-auto text-blue-400 dark:text-gray-500 mb-4" size={48} />
+            <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">No completed deliveries yet</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">Donations appearing here will show your successful distributions</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -373,11 +373,11 @@ export default function OrganizationsDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-shrink-0 h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="text-green-600" size={24} />
+                        <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
                         </div>
                         <div className="flex-1">
-                          <p className="text-lg font-bold text-gray-900 dark:text-white">
+                          <p className="text-lg font-bold text-gray-900 dark:text-gray-200">
                             {donation.quantityInMeals} Meals - {donation.foodType}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -386,11 +386,11 @@ export default function OrganizationsDashboard() {
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                        <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-semibold rounded-full">
                           ✓ Delivered
                         </span>
                         {donation.donorName && (
-                          <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full flex items-center gap-1">
+                          <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-xs font-semibold rounded-full flex items-center gap-1">
                             From: {donation.donorName}
                           </span>
                         )}
@@ -411,25 +411,25 @@ export default function OrganizationsDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">📍 Received On</p>
-                        <p className="text-sm text-gray-900 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
                       </div>
                       {donation.donorName && (
                         <div>
-                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🏪 From Donor</p>
+                          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">🏪 From Donor</p>
                           <div>
-                            <p className="text-sm text-gray-900 font-medium">{donation.donorName}</p>
+                            <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.donorName}</p>
                             {donation.donorEmail && (
-                              <p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.donorEmail}</p>
                             )}
                             {donation.donorPhone && (
-                              <p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.donorPhone}</p>
                             )}
                           </div>
                         </div>
                       )}
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">📋 Food Details</p>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                           <p>Category: <span className="font-medium">{donation.foodCategory}</span></p>
                           <p>Type: <span className="font-medium">{donation.foodType}</span></p>
                           <p>Storage: <span className="font-medium">{donation.storageInfo}</span></p>
@@ -451,7 +451,7 @@ export default function OrganizationsDashboard() {
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-xl font-bold leading-6 text-gray-900 dark:text-white mb-4">
+                <h3 className="text-xl font-bold leading-6 text-gray-900 dark:text-gray-200 mb-4">
                   Accept Allocation
                 </h3>
                 <div className="mb-4 text-sm text-gray-500">
@@ -460,22 +460,22 @@ export default function OrganizationsDashboard() {
                 {acceptingDonation.foodCategory === 'Both' ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Veg (Max: {acceptingDonation.vegQuantity})</label>
-                      <input type="number" min="0" max={acceptingDonation.vegQuantity} value={takeVegQuantity} onChange={e => setTakeVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Veg (Max: {acceptingDonation.vegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.vegQuantity} value={takeVegQuantity} onChange={e => setTakeVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Non-Veg (Max: {acceptingDonation.nonVegQuantity})</label>
-                      <input type="number" min="0" max={acceptingDonation.nonVegQuantity} value={takeNonVegQuantity} onChange={e => setTakeNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Non-Veg (Max: {acceptingDonation.nonVegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.nonVegQuantity} value={takeNonVegQuantity} onChange={e => setTakeNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Quantity (Max: {acceptingDonation.quantityInMeals})</label>
-                    <input type="number" min="1" max={acceptingDonation.quantityInMeals} value={takeQuantity} onChange={e => setTakeQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Max: {acceptingDonation.quantityInMeals})</label>
+                    <input type="number" min="1" max={acceptingDonation.quantityInMeals} value={takeQuantity} onChange={e => setTakeQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                   </div>
                 )}
                 <div className="mt-5 sm:mt-6 flex gap-3">
-                  <button disabled={isAccepting} onClick={confirmAcceptAllocation} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
+                  <button disabled={isAccepting} onClick={confirmAcceptAllocation} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-gray-100 hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
                     {isAccepting ? 'Accepting...' : 'Confirm'}
                   </button>
                   <button onClick={() => setAcceptingDonation(null)} className="flex-1 inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 sm:text-sm">

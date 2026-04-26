@@ -74,7 +74,7 @@ export default function ProfileHeader({ user, onEditClick, onPhotoUpdate, isUpda
         <div className="flex-1 flex flex-col justify-between">
           <div>
             <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2 mb-3">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{displayName}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-200">{displayName}</h1>
               <div className={`inline-flex w-fit px-3 py-1.5 rounded-full font-semibold text-sm ${getRoleBgColor(user.role)}`}>
                 {getRoleLabel(user.role)}
               </div>
@@ -88,19 +88,19 @@ export default function ProfileHeader({ user, onEditClick, onPhotoUpdate, isUpda
               {user.email && (
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Email</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{user.email}</span>
+                  <span className="text-gray-900 dark:text-gray-200 font-medium">{user.email}</span>
                 </div>
               )}
               {user.phoneNumber && (
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Phone</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{user.phoneNumber}</span>
+                  <span className="text-gray-900 dark:text-gray-200 font-medium">{user.phoneNumber}</span>
                 </div>
               )}
               {user.location && (
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Location</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{user.location.city || user.location.address}</span>
+                  <span className="text-gray-900 dark:text-gray-200 font-medium">{user.location.city || user.location.address}</span>
                 </div>
               )}
               <div className="flex flex-col">

@@ -14,6 +14,9 @@ import Register from './pages/Register';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import ProfilePage from './pages/profile/ProfilePage';
+import DonorsListPage from './pages/DonorsListPage';
+import OrganizationsListPage from './pages/OrganizationsListPage';
+import VolunteersListPage from './pages/VolunteersListPage';
 
 function App() {
   return (
@@ -31,6 +34,9 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/donors" element={<DonorsListPage />} />
+                <Route path="/organizations" element={<OrganizationsListPage />} />
+                <Route path="/volunteers" element={<VolunteersListPage />} />
 
                 <Route
                   path="/onboarding"

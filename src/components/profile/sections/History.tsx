@@ -70,7 +70,7 @@ export default function History({ user }: HistoryProps) {
         ].map(({ label, value }) => (
           <div key={label} className={`${cardCls} p-4`}>
             <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{label}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-200 mt-1">{value}</p>
           </div>
         ))}
       </div>
@@ -80,7 +80,7 @@ export default function History({ user }: HistoryProps) {
         <div className="flex gap-2 overflow-x-auto">
           {(['all', '7days', '30days', '90days'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${filter === f ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${filter === f ? 'bg-brand-600 text-gray-100' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
               {f === 'all' ? 'All Time' : f === '7days' ? 'Last 7 Days' : f === '30days' ? 'Last 30 Days' : 'Last 90 Days'}
             </button>
           ))}
@@ -99,7 +99,7 @@ export default function History({ user }: HistoryProps) {
                       <Package className="text-brand-600 dark:text-brand-400" size={20} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-200">{item.title}</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                         <Calendar size={14} />
                         {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -118,7 +118,7 @@ export default function History({ user }: HistoryProps) {
                   </span>
                   <div className="text-right">
                     <p className="text-xs text-gray-600 dark:text-gray-400">Quantity</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{item.quantity} meals</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-gray-200">{item.quantity} meals</p>
                   </div>
                 </div>
               </div>

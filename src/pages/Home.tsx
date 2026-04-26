@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { collection, query, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import L from 'leaflet';
+// @ts-ignore
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Users, Heart, Navigation } from 'lucide-react';
 
@@ -27,6 +28,7 @@ const customMarker = (color: string) =>
 
 export default function Home() {
   const { userProfile } = useAuth();
+  const navigate = useNavigate();
   const [totalMeals, setTotalMeals] = useState(0);
   const [displayedMeals, setDisplayedMeals] = useState(0);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -76,21 +78,14 @@ export default function Home() {
     <div className="flex flex-col">
 
       {/* ── Hero ── */}
-      <section className="relative bg-gray-900 text-white py-32 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-600 rounded-full blur-3xl opacity-20 animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
+      <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 dark:from-gray-900 dark:to-gray-800 text-gray-300 dark:text-gray-300 py-32 overflow-hidden">
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center z-10">
           <Heart className="text-brand-500 w-16 h-16 mb-6" />
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
-            Share Food.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
-              Give Hope.
-            </span>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-green-400 dark:text-green-400">
+            Share Food, Give Hope.
           </h1>
-          <p className="max-w-2xl text-xl text-gray-300 mb-10">
+          <p className="max-w-2xl text-xl text-gray-400 dark:text-gray-400 mb-10">
             Join our mission to eliminate food waste and hunger. Connect restaurants with surplus
             food to organizations and volunteers who deliver it directly to those in need.
           </p>
@@ -99,7 +94,7 @@ export default function Home() {
             {userProfile ? (
               <Link
                 to="/dashboard"
-                className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-lg transition-all hover:-translate-y-1"
+                className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-gray-100 rounded-full font-bold text-lg shadow-lg transition-all hover:-translate-y-1"
               >
                 Go to Dashboard
               </Link>
@@ -107,13 +102,13 @@ export default function Home() {
               <>
                 <Link
                   to="/register"
-                  className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-lg transition-all hover:-translate-y-1"
+                  className="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-gray-100 rounded-full font-bold text-lg shadow-lg transition-all hover:-translate-y-1"
                 >
                   Join the Mission
                 </Link>
                 <Link
                   to="/login"
-                  className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md rounded-full font-bold text-lg transition-all"
+                  className="px-8 py-4 bg-white/10 hover:bg-white/20 text-gray-200 backdrop-blur-md rounded-full font-bold text-lg transition-all"
                 >
                   Log In
                 </Link>
@@ -124,7 +119,7 @@ export default function Home() {
       </section>
 
       {/* ── Impact Counter ── */}
-      <section className="py-14 bg-white dark:bg-gray-800 transition-colors duration-300 shadow-sm z-20 relative -mt-8 mx-4 sm:mx-8 lg:mx-auto lg:w-full max-w-5xl rounded-3xl">
+      <section className="py-14 bg-gray-100 dark:bg-gray-800 transition-colors duration-300 shadow-sm z-20 relative -mt-8 mx-4 sm:mx-8 lg:mx-auto lg:w-full max-w-5xl rounded-3xl border border-gray-200 dark:border-gray-700">
         <div className="flex flex-col items-center justify-center px-6">
           <p className="text-sm uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold mb-2">
             Total Impact
@@ -139,20 +134,21 @@ export default function Home() {
           {/* Impact boxes row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 w-full">
             {[
-              { icon: <MapPin size={28} />, color: 'text-blue-500 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30', label: 'Donors', sub: 'Restaurants & Events' },
-              { icon: <Heart size={28} />, color: 'text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/30', label: 'Organizations', sub: 'Distributing food' },
-              { icon: <Navigation size={28} />, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30', label: 'Volunteers', sub: 'Delivery partners' },
-            ].map(({ icon, color, label, sub }) => (
-              <div
+              { icon: <MapPin size={28} />, color: 'text-blue-500 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30', label: 'Donors', sub: 'Restaurants & Events', path: '/donors' },
+              { icon: <Heart size={28} />, color: 'text-brand-600 dark:text-brand-400 bg-brand-100 dark:bg-brand-900/30', label: 'Organizations', sub: 'Distributing food', path: '/organizations' },
+              { icon: <Navigation size={28} />, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30', label: 'Volunteers', sub: 'Delivery partners', path: '/volunteers' },
+            ].map(({ icon, color, label, sub, path }) => (
+              <button
                 key={label}
-                className="flex flex-col items-center justify-between h-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-2xl p-6 gap-3 transition-colors duration-300"
+                onClick={() => navigate(path)}
+                className="flex flex-col items-center justify-between h-full bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-2xl p-6 gap-3 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
               >
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center ${color}`}>
                   {icon}
                 </div>
-                <h3 className="font-bold text-xl text-gray-900 dark:text-white">{label}</h3>
+                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-200">{label}</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">{sub}</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -162,7 +158,7 @@ export default function Home() {
       <section className="py-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 mb-4">
               Our Growing Network
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -170,9 +166,9 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 gap-8">
             {/* Map */}
-            <div className="lg:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-xl h-[500px] transition-colors duration-300">
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-3xl shadow-xl h-[500px] transition-colors duration-300 border border-gray-200 dark:border-gray-700">
               <div className="map-container rounded-2xl">
                 <MapContainer center={[28.6139, 77.209]} zoom={11} scrollWheelZoom={false}>
                   <TileLayer
@@ -195,28 +191,6 @@ export default function Home() {
                   ))}
                 </MapContainer>
               </div>
-            </div>
-
-            {/* Legend sidebar */}
-            <div className="space-y-4">
-              {[
-                { icon: <MapPin />, bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', label: 'Donors', sub: 'Restaurants, Hostels' },
-                { icon: <Heart />, bg: 'bg-brand-100 dark:bg-brand-900/30', text: 'text-brand-600 dark:text-brand-400', label: 'Organizations', sub: 'Distributing food' },
-                { icon: <Navigation />, bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', label: 'Volunteers', sub: 'Active delivery partners' },
-              ].map(({ icon, bg, text, label, sub }) => (
-                <div
-                  key={label}
-                  className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors duration-300"
-                >
-                  <div className={`w-12 h-12 rounded-full ${bg} flex items-center justify-center ${text} shrink-0`}>
-                    {icon}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">{label}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">{sub}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

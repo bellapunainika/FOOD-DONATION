@@ -246,7 +246,7 @@ export default function VolunteerDashboard() {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-white">Volunteer Dashboard</h2>
+            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-200">Volunteer Dashboard</h2>
             <p className="mt-1 text-gray-500 dark:text-gray-400">Help people in need by making food donations accessible to everyone.</p>
           </div>
           
@@ -254,12 +254,12 @@ export default function VolunteerDashboard() {
           <div className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
             <div className="flex flex-col items-end">
               <p className={`text-sm font-semibold transition-colors ${
-                isAvailable ? 'text-green-700' : 'text-gray-700'
+                isAvailable ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'
               }`}>
                 Available for Delivery
               </p>
               <p className={`text-xs mt-1 font-medium transition-colors ${
-                isAvailable ? 'text-green-600' : 'text-gray-500'
+                isAvailable ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 {isAvailable ? '🟢 You are ONLINE' : '🔴 You are OFFLINE'}
               </p>
@@ -293,8 +293,8 @@ export default function VolunteerDashboard() {
         {/* Status Message */}
         <div className={`mt-6 p-4 rounded-xl border-2 flex items-start gap-3 transition-all duration-300 ${
           isAvailable
-            ? 'bg-green-50 border-green-300'
-            : 'bg-gray-100 border-gray-300'
+            ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700'
+            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
         }`}>
           <div className={`flex-shrink-0 mt-0.5 ${isAvailable ? 'animate-pulse' : ''}`}>
             {isAvailable ? (
@@ -304,12 +304,12 @@ export default function VolunteerDashboard() {
             )}
           </div>
           <div>
-            <p className={`font-semibold ${isAvailable ? 'text-green-900' : 'text-gray-900'}`}>
+            <p className={`font-semibold ${isAvailable ? 'text-green-900 dark:text-green-300' : 'text-gray-900 dark:text-gray-200'}`}>
               {isAvailable
                 ? '✅ You are ONLINE and ready for deliveries!'
                 : '⏸️ You are currently OFFLINE'}
             </p>
-            <p className={`text-sm mt-1 ${isAvailable ? 'text-green-700' : 'text-gray-700'}`}>
+            <p className={`text-sm mt-1 ${isAvailable ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-400'}`}>
               {isAvailable
                 ? 'Nearby donations will appear below. You\'ll be notified when someone needs your help. Thank you for being a hero!'
                 : 'Toggle ON to start receiving donation requests and notifications. Take a break whenever you need!'}
@@ -360,34 +360,34 @@ export default function VolunteerDashboard() {
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
-                 <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-white">🎯 Available Needs Nearby</h3>
+                 <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200">🎯 Available Needs Nearby</h3>
                  {!isAvailable ? (
-                   <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                     <Zap size={40} className="mx-auto text-gray-300 mb-3" />
-                     <p className="text-gray-600 text-lg font-medium mb-2">Go Online to See Donations</p>
-                     <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <Zap size={40} className="mx-auto text-gray-300 dark:text-gray-500 mb-3" />
+                      <p className="text-gray-600 dark:text-gray-400 text-lg font-medium mb-2">Go Online to See Donations</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500 max-w-xs mx-auto">
                        Toggle your availability to the ON position to start seeing food donations that need a hero like you!
                      </p>
                    </div>
                  ) : availablePickups.length === 0 ? (
-                   <p className="text-gray-500 py-8 text-center">✨ No pickups available currently. Check back soon!</p>
+                    <p className="text-gray-500 dark:text-gray-400 py-8 text-center">✨ No pickups available currently. Check back soon!</p>
                  ) : (
                    <div className="space-y-4">
                      {availablePickups.map(don => (
-                        <div key={don.id} className="flex flex-col sm:flex-row justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 gap-4">
-                           <div className="flex-1">
-                               <div className="font-bold text-lg text-gray-900">{don.donorName}</div>
-                               <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
-                                <div className="text-sm text-gray-600">
+                         <div key={don.id} className="flex flex-col sm:flex-row justify-between bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-4 gap-4">
+                            <div className="flex-1">
+                                <div className="font-bold text-lg text-gray-900 dark:text-gray-200">{don.donorName}</div>
+                                <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
+                                 <div className="text-sm text-gray-600 dark:text-gray-400">
                                  {don.donorEmail && <p>📧 {don.donorEmail}</p>}
                                  {don.donorPhone && <p>📱 {don.donorPhone}</p>}
                                </div>
-                               <div className="text-sm text-gray-600 mt-2">Quantity: {don.quantityInMeals} Meals | Ready since {new Date(don.preparedTime).toLocaleTimeString()}</div>
-                               <div className="text-sm text-gray-500 mt-1 flex gap-2 items-center">
+                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Quantity: {don.quantityInMeals} Meals | Ready since {new Date(don.preparedTime).toLocaleTimeString()}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex gap-2 items-center">
                                   <Navigation size={14}/> {don.location.address}
                                </div>
                            </div>
-                           <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-sm transition whitespace-nowrap h-fit">
+                            <button onClick={() => handleOpenAcceptModal(don)} className="mt-4 sm:mt-0 font-bold px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-100 rounded-xl shadow-sm transition whitespace-nowrap h-fit">
                                Accept Delivery
                            </button>
                         </div>
@@ -397,30 +397,30 @@ export default function VolunteerDashboard() {
               </div>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 h-fit">
-              <h3 className="font-bold text-xl mb-4 flex items-center gap-2 text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 h-fit transition-colors">
+              <h3 className="font-bold text-xl mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-200">
                   <Truck /> Your Active Tasks
               </h3>
-              {activeDeliveries.length === 0 && <p className="text-gray-500 text-center py-8">No active tasks.</p>}
+              {activeDeliveries.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-8">No active tasks.</p>}
               <div className="space-y-4">
                   {activeDeliveries.map(d => (
-                     <div key={d.id} className="p-4 border border-blue-200 bg-blue-50 rounded-xl shadow-sm">
-                         <div className="font-bold text-lg">{d.donorName}</div>
-                         <div className="text-xs uppercase text-gray-500 font-semibold mt-2">Donor Contact:</div>
-                         <div className="text-sm text-gray-600 mb-2">
+                     <div key={d.id} className="p-4 border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm">
+                         <div className="font-bold text-lg text-gray-900 dark:text-gray-200">{d.donorName}</div>
+                         <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
+                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                            {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                            {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                          </div>
-                         <div className="text-sm text-gray-600 mb-4">{d.quantityInMeals} Meals</div>
+                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{d.quantityInMeals} Meals</div>
 
                          <div className="space-y-2">
                             {d.status === 'reserved' && (
-                                <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+                                <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-gray-100 font-bold rounded-lg transition">
                                    <PackageOpen size={18} /> Mark as Picked Up
                                 </button>
                             )}
                             {d.status === 'picked_up' && (
-                                <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition">
+                                <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-gray-100 font-bold rounded-lg transition">
                                    <Check size={18} /> Mark as Delivered
                                 </button>
                             )}
@@ -436,7 +436,7 @@ export default function VolunteerDashboard() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-200 flex items-center gap-2">
                 <Heart className="text-red-500" size={28} />
                 Your Hero's Journey
               </h3>
@@ -462,25 +462,25 @@ export default function VolunteerDashboard() {
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
-            <p className="text-xs uppercase text-green-700 font-semibold tracking-wide">Total Meals Delivered</p>
-            <p className="text-3xl font-black text-green-600 mt-2">{totalMealsDelivered}</p>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4">
+            <p className="text-xs uppercase text-green-700 dark:text-green-400 font-semibold tracking-wide">Total Meals Delivered</p>
+            <p className="text-3xl font-black text-green-600 dark:text-green-400 mt-2">{totalMealsDelivered}</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-xs uppercase text-blue-700 font-semibold tracking-wide">People Helped</p>
-            <p className="text-3xl font-black text-blue-600 mt-2">{delivered.length}</p>
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
+            <p className="text-xs uppercase text-blue-700 dark:text-blue-400 font-semibold tracking-wide">People Helped</p>
+            <p className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-2">{delivered.length}</p>
           </div>
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
-            <p className="text-xs uppercase text-purple-700 font-semibold tracking-wide">Impact Score</p>
-            <p className="text-3xl font-black text-purple-600 mt-2">⭐{Math.min(delivered.length * 5, 100)}</p>
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4">
+            <p className="text-xs uppercase text-purple-700 dark:text-purple-400 font-semibold tracking-wide">Impact Score</p>
+            <p className="text-3xl font-black text-purple-600 dark:text-purple-400 mt-2">⭐{Math.min(delivered.length * 5, 100)}</p>
           </div>
         </div>
 
         {historyDonations.length === 0 ? (
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-dashed border-yellow-200 rounded-2xl p-12 text-center">
-            <Heart className="mx-auto text-yellow-400 mb-4" size={48} />
-            <p className="text-gray-600 text-lg font-medium">No completed deliveries yet</p>
-            <p className="text-gray-500 text-sm mt-1">Your heroic deliveries will appear here!</p>
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 border-2 border-dashed border-yellow-200 dark:border-gray-600 rounded-2xl p-12 text-center">
+            <Heart className="mx-auto text-yellow-400 dark:text-gray-500 mb-4" size={48} />
+            <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">No completed deliveries yet</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">Your heroic deliveries will appear here!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -496,11 +496,11 @@ export default function VolunteerDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-shrink-0 h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="text-green-600" size={24} />
+                        <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <CheckCircle className="text-green-600 dark:text-green-400" size={24} />
                         </div>
                         <div className="flex-1">
-                          <p className="text-lg font-bold text-gray-900 dark:text-white">
+                          <p className="text-lg font-bold text-gray-900 dark:text-gray-200">
                             {donation.quantityInMeals} Meals - {donation.foodType}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -509,7 +509,7 @@ export default function VolunteerDashboard() {
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                        <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-semibold rounded-full">
                           ✓ Successfully Delivered
                         </span>
                       </div>
@@ -529,13 +529,13 @@ export default function VolunteerDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">✅ Delivered On</p>
-                        <p className="text-sm text-gray-900 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
                       </div>
                       {donation.donorName && (
                         <div>
                           <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🏪 From</p>
                           <div>
-                            <p className="text-sm text-gray-900 font-medium">{donation.donorName}</p>
+                            <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.donorName}</p>
                             {donation.donorEmail && (
                               <p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>
                             )}
@@ -547,7 +547,7 @@ export default function VolunteerDashboard() {
                       )}
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">📋 Food Details</p>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                           <p>Category: <span className="font-medium">{donation.foodCategory}</span></p>
                           <p>Type: <span className="font-medium">{donation.foodType}</span></p>
                           <p>Storage: <span className="font-medium">{donation.storageInfo}</span></p>
@@ -569,7 +569,7 @@ export default function VolunteerDashboard() {
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-xl font-bold leading-6 text-gray-900 dark:text-white mb-4">
+                <h3 className="text-xl font-bold leading-6 text-gray-900 dark:text-gray-200 mb-4">
                   Accept Pickup
                 </h3>
                 <div className="mb-4 text-sm text-gray-500">
@@ -578,22 +578,22 @@ export default function VolunteerDashboard() {
                 {acceptingDonation.foodCategory === 'Both' ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Veg (Max: {acceptingDonation.vegQuantity})</label>
-                      <input type="number" min="0" max={acceptingDonation.vegQuantity} value={takeVegQuantity} onChange={e => setTakeVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Veg (Max: {acceptingDonation.vegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.vegQuantity} value={takeVegQuantity} onChange={e => setTakeVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Non-Veg (Max: {acceptingDonation.nonVegQuantity})</label>
-                      <input type="number" min="0" max={acceptingDonation.nonVegQuantity} value={takeNonVegQuantity} onChange={e => setTakeNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Non-Veg (Max: {acceptingDonation.nonVegQuantity})</label>
+                      <input type="number" min="0" max={acceptingDonation.nonVegQuantity} value={takeNonVegQuantity} onChange={e => setTakeNonVegQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Quantity (Max: {acceptingDonation.quantityInMeals})</label>
-                    <input type="number" min="1" max={acceptingDonation.quantityInMeals} value={takeQuantity} onChange={e => setTakeQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Max: {acceptingDonation.quantityInMeals})</label>
+                    <input type="number" min="1" max={acceptingDonation.quantityInMeals} value={takeQuantity} onChange={e => setTakeQuantity(parseInt(e.target.value) || 0)} className="mt-1 flex w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-xl px-3 py-2 focus:ring-brand-500 focus:border-brand-500" />
                   </div>
                 )}
                 <div className="mt-5 sm:mt-6 flex gap-3">
-                  <button disabled={isAccepting} onClick={confirmAcceptPickup} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-white hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
+                  <button disabled={isAccepting} onClick={confirmAcceptPickup} className="flex-1 inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-600 text-base font-medium text-gray-100 hover:bg-brand-700 focus:outline-none sm:text-sm disabled:opacity-50">
                     {isAccepting ? 'Accepting...' : 'Confirm'}
                   </button>
                   <button onClick={() => setAcceptingDonation(null)} className="flex-1 inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 sm:text-sm">

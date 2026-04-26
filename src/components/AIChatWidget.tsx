@@ -74,7 +74,7 @@ export default function AIChatWidget() {
 
       {/* Chat Window */}
       <div 
-        className={`fixed bottom-6 right-6 w-[350px] sm:w-[400px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-50 border border-gray-200 ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
+        className={`fixed bottom-6 right-6 w-[350px] sm:w-[400px] h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-right z-50 border border-gray-200 dark:border-gray-700 ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}
       >
         {/* Header */}
         <div className="bg-brand-600 px-4 py-3 flex items-center justify-between text-white shadow-md">
@@ -88,14 +88,14 @@ export default function AIChatWidget() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 space-y-4">
            {messages.map(msg => (
               <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                  <div className={`flex gap-2 max-w-[80%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.sender === 'user' ? 'bg-blue-100 text-blue-600' : 'bg-brand-100 text-brand-600'}`}>
                        {msg.sender === 'user' ? <User size={16}/> : <Bot size={16}/>}
                     </div>
-                    <div className={`px-4 py-2 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-tl-sm'}`}>
+                    <div className={`px-4 py-2 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-600 rounded-tl-sm'}`}>
                        {msg.text}
                     </div>
                  </div>
@@ -107,7 +107,7 @@ export default function AIChatWidget() {
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-brand-100 text-brand-600">
                        <Bot size={16}/>
                     </div>
-                    <div className="px-4 py-3 rounded-2xl bg-white shadow-sm border border-gray-100 rounded-tl-sm flex gap-1 items-center">
+                    <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-700 shadow-sm border border-gray-200 dark:border-gray-600 rounded-tl-sm flex gap-1 items-center">
                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
@@ -119,14 +119,14 @@ export default function AIChatWidget() {
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex gap-2">
+        <form onSubmit={handleSend} className="p-3 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex gap-2">
            <input
              type="text"
              value={inputValue}
              onChange={e => setInputValue(e.target.value)}
              placeholder={currentUser ? "Type your message..." : "Login to chat"}
              disabled={!currentUser || isTyping}
-             className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
+             className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50"
            />
            <button 
              type="submit" 

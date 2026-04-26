@@ -10,7 +10,7 @@ interface PersonalInfoProps {
 }
 
 const inputCls =
-  'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-colors';
+  'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-colors';
 
 const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2';
 const rowCls   = 'flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-700';
@@ -58,10 +58,10 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
     return (
       <div className={cardCls}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Personal Information</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200">Personal Information</h3>
           <button
             onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-gray-100 rounded-lg font-medium transition-colors"
           >
             Edit
           </button>
@@ -73,7 +73,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
               <Mail className="text-gray-400 dark:text-gray-500 mt-1" size={20} />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Full Name</p>
-                <p className="text-gray-900 dark:text-white font-medium">{user.fullName}</p>
+                <p className="text-gray-900 dark:text-gray-200 font-medium">{user.fullName}</p>
               </div>
             </div>
           )}
@@ -82,7 +82,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
               <Building className="text-gray-400 dark:text-gray-500 mt-1" size={20} />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Organization Name</p>
-                <p className="text-gray-900 dark:text-white font-medium">{user.organizationName}</p>
+                <p className="text-gray-900 dark:text-gray-200 font-medium">{user.organizationName}</p>
               </div>
             </div>
           )}
@@ -90,7 +90,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
             <Mail className="text-gray-400 dark:text-gray-500 mt-1" size={20} />
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Email Address</p>
-              <p className="text-gray-900 dark:text-white font-medium">{user.email}</p>
+              <p className="text-gray-900 dark:text-gray-200 font-medium">{user.email}</p>
             </div>
           </div>
           {user.phoneNumber && (
@@ -98,7 +98,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
               <Phone className="text-gray-400 dark:text-gray-500 mt-1" size={20} />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Phone Number</p>
-                <p className="text-gray-900 dark:text-white font-medium">{user.phoneNumber}</p>
+                <p className="text-gray-900 dark:text-gray-200 font-medium">{user.phoneNumber}</p>
               </div>
             </div>
           )}
@@ -107,7 +107,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
               <MapPin className="text-gray-400 dark:text-gray-500 mt-1" size={20} />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Address</p>
-                <p className="text-gray-900 dark:text-white font-medium">{user.location.address}</p>
+                <p className="text-gray-900 dark:text-gray-200 font-medium">{user.location.address}</p>
                 {user.location.city && (
                   <p className="text-gray-600 dark:text-gray-400 text-sm">
                     {user.location.city}{user.location.pincode && ` - ${user.location.pincode}`}
@@ -124,7 +124,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
   return (
     <div className={cardCls}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Edit Personal Info</h3>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-200">Edit Personal Info</h3>
       </div>
 
       <div className="space-y-5">
@@ -161,7 +161,7 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
       </div>
 
       <div className="flex gap-3 mt-8">
-        <button onClick={handleSave} disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors">
+        <button onClick={handleSave} disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-gray-100 rounded-lg font-medium transition-colors">
           <Save size={18} /> Save Changes
         </button>
         <button onClick={() => setIsEditing(false)} disabled={isLoading} className="flex items-center gap-2 px-6 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors">
