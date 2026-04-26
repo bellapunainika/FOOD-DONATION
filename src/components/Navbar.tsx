@@ -40,7 +40,7 @@ export default function Navbar() {
               <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-full text-brand-600 dark:text-brand-400 transition-colors duration-300">
                 <Heart size={24} className="fill-brand-500" />
               </div>
-              <span className="font-bold text-xl text-gray-900 dark:text-gray-200 tracking-tight transition-colors duration-300">AI Feed Hunger</span>
+              <span className="font-bold text-xl text-gray-900 dark:text-gray-200 tracking-tight transition-colors duration-300">Feed Hunger</span>
             </Link>
           </div>
           
