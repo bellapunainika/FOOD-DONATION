@@ -126,13 +126,46 @@ export default function Home() {
       </section>
 
       {/* Impact Stats */}
-      <section className="py-16 bg-white shrink-0 shadow-sm z-20 relative -mt-8 mx-4 sm:mx-8 lg:mx-auto max-w-5xl rounded-3xl">
-        <div className="flex flex-col items-center justify-center">
+      <section className="py-16 px-6 sm:px-12 bg-white shrink-0 shadow-sm z-20 relative -mt-8 mx-4 sm:mx-8 lg:mx-auto max-w-5xl rounded-3xl">
+        <div className="flex flex-col items-center justify-center text-center">
           <p className="text-sm uppercase tracking-widest text-gray-400 font-bold mb-2">Total Impact</p>
           <div className="text-6xl md:text-8xl font-black text-brand-600 tabular-nums">
             {displayedMeals.toLocaleString()}+
           </div>
           <p className="text-xl text-gray-600 mt-4 font-medium">Meals Served to the Needy</p>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+            <div className="mb-12 lg:mb-0">
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl mb-6">
+                About Our Mission
+              </h2>
+              <div className="w-20 h-2 bg-brand-500 rounded-full mb-8"></div>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                We believe that no one should go hungry while perfectly good food goes to waste. Our platform serves as a bridge, connecting those with surplus food to those who need it the most.
+              </p>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                By bringing together generous restaurants, local businesses, dedicated organizations, and passionate volunteers, we ensure that fresh, nutritious meals are safely collected and delivered directly to the communities that need them.
+              </p>
+              <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                <p className="text-lg text-brand-800 font-medium italic">
+                  "Together, we are not just sharing food—we are delivering hope, building community, and taking a stand against food insecurity."
+                </p>
+              </div>
+            </div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+               <div className="absolute inset-0 bg-brand-600 mix-blend-multiply opacity-20 z-10 transition-opacity group-hover:opacity-10"></div>
+               <img 
+                 src="/campaign_poster.png" 
+                 alt="Food Donation Campaign" 
+                 className="w-full h-full object-cover object-center min-h-[450px] transition-transform duration-700 group-hover:scale-105" 
+               />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -210,6 +243,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
     </div>
   );
 }
