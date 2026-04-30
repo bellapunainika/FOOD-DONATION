@@ -5,6 +5,7 @@ import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { Clock, AlertCircle, CheckCircle, Package, Trash2, Users, Heart, Plus, Minus } from 'lucide-react';
+import LiveTrackingViewer from '../../components/delivery/LiveTrackingViewer';
 
 export default function DonorDashboard() {
   const { userProfile } = useAuth();
@@ -216,6 +217,14 @@ export default function DonorDashboard() {
           <dd className="mt-1 text-3xl font-semibold text-green-600">{totalMealsDonated}</dd>
         </div>
       </div>
+
+
+      {/* Live Delivery Tracking Section */}
+      {userProfile?.uid && (
+        <div className="mb-8">
+          <LiveTrackingViewer donorId={userProfile.uid} />
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl border border-gray-100 dark:border-gray-700 transition-colors">
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">

@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { CheckCircle, Heart, Users } from 'lucide-react';
+import TrackingUpdater from '../../components/delivery/TrackingUpdater';
 
 const customMarker = L.divIcon({
   className: 'custom-div-icon',
@@ -314,6 +315,17 @@ export default function OrganizationsDashboard() {
                                </button>
                            )}
                        </div>
+                       {/* Real-time location tracking */}
+                       {d.id && userProfile && (d.status === 'picked_up' || d.status === 'delivered') && (
+                         <TrackingUpdater
+                           userId={userProfile.uid}
+                           role="organization"
+                           handlerName={userProfile.organizationName || userProfile.fullName || 'Organization'}
+                           donationId={d.id}
+                           donorId={d.donorId}
+                           donationStatus={d.status}
+                         />
+                       )}
                     </li>
                  ))}
                  {activeDonations.length === 0 && (
