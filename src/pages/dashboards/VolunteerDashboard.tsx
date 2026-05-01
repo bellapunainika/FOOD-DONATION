@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap } from 'lucide-react';
-import TrackingUpdater from '../../components/delivery/TrackingUpdater';
 
 const currentLocIcon = L.divIcon({
   className: 'custom-div-icon',
@@ -426,17 +425,6 @@ export default function VolunteerDashboard() {
                                 </button>
                             )}
                          </div>
-                       {/* Real-time location tracking */}
-                       {d.id && userProfile && (d.status === 'picked_up' || d.status === 'delivered') && (
-                         <TrackingUpdater
-                           userId={userProfile.uid}
-                           role="volunteer"
-                           handlerName={userProfile.fullName || 'Volunteer'}
-                           donationId={d.id}
-                           donorId={d.donorId}
-                           donationStatus={d.status}
-                         />
-                       )}
                      </div>
                   ))}
               </div>

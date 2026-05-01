@@ -15,19 +15,5 @@ service cloud.firestore {
       allow update: if request.auth != null;
       allow delete: if request.auth != null;
     }
-
-    // Deliveries: real-time tracking documents
-    match /deliveries/{deliveryId} {
-      // Any authenticated user can read (donor reads their own via query filters)
-      allow read: if request.auth != null;
-      // Only the assigned handler (org or volunteer) can create
-      allow create: if request.auth != null
-        && (request.resource.data.organizationId == request.auth.uid
-            || request.resource.data.volunteerId == request.auth.uid);
-      // Only the assigned handler can update location
-      allow update: if request.auth != null
-        && (resource.data.organizationId == request.auth.uid
-            || resource.data.volunteerId == request.auth.uid);
-    }
   }
 }

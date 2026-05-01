@@ -99,27 +99,3 @@ export interface DeliveryJob {
   dropoffLocation: LocationData;
   createdAt: number;
 }
-
-// Real-time delivery tracking
-export interface DeliveryTracking {
-  id?: string;
-  donationId: string;
-  donorId: string;
-
-  handledBy: 'organization' | 'volunteer';
-
-  organizationId?: string;
-  volunteerId?: string;
-
-  handlerName?: string;
-
-  status: 'pending' | 'picked' | 'delivered';
-
-  currentLocation: {
-    lat: number;
-    lng: number;
-  };
-
-  lastUpdated: number; // timestamp
-  createdAt: number;
-}
