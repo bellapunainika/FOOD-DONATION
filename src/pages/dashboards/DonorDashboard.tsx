@@ -5,6 +5,7 @@ import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { Clock, AlertCircle, CheckCircle, Package, Trash2, Users, Heart, Plus, Minus } from 'lucide-react';
+import LiveTrackingMap from '../../components/tracking/LiveTrackingMap';
 
 export default function DonorDashboard() {
   const { userProfile } = useAuth();
@@ -276,6 +277,13 @@ export default function DonorDashboard() {
                                 <p className="font-bold text-gray-900 dark:text-gray-200 mt-1">{donation.organizationName}</p>
                                 {donation.organizationEmail && <p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.organizationEmail}</p>}
                                 {donation.organizationPhone && <p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.organizationPhone}</p>}
+                                {donation.deliveryPersonName && (
+                                  <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+                                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">Delivery Person</p>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{donation.deliveryPersonName}</p>
+                                    {donation.deliveryPersonPhone && <p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.deliveryPersonPhone}</p>}
+                                  </div>
+                                )}
                               </div>
                             )}
                             {donation.volunteerName && (
@@ -287,6 +295,18 @@ export default function DonorDashboard() {
                               </div>
                             )}
                           </div>
+
+                          {/* Live Tracking Map */}
+                          {(donation.status === 'reserved' || donation.status === 'picked_up') &&
+                           (donation.deliveryPersonName || donation.volunteerName) && (
+                            <LiveTrackingMap
+                              donationId={donation.id!}
+                              initialDonation={donation}
+                              donorLat={userProfile?.location?.lat}
+                              donorLng={userProfile?.location?.lng}
+                            />
+                          )}
+
                           <button
                             onClick={() => donation.id && handleDeleteDonation(donation.id, donation.status)}
                             className="mt-4 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition border border-red-200 dark:border-red-700"
@@ -407,11 +427,10 @@ export default function DonorDashboard() {
                           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">🏢 Received By</p>
                           <div>
                             <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.organizationName}</p>
-                            {donation.organizationEmail && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.organizationEmail}</p>
-                            )}
-                            {donation.organizationPhone && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.organizationPhone}</p>
+                            {donation.organizationEmail && (<p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.organizationEmail}</p>)}
+                            {donation.organizationPhone && (<p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.organizationPhone}</p>)}
+                            {donation.deliveryPersonName && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Delivered by: <span className="font-semibold">{donation.deliveryPersonName}</span></p>
                             )}
                           </div>
                         </div>
@@ -421,11 +440,19 @@ export default function DonorDashboard() {
                           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">👤 Delivered By</p>
                           <div>
                             <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.volunteerName}</p>
-                            {donation.volunteerEmail && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.volunteerEmail}</p>
-                            )}
-                            {donation.volunteerPhone && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.volunteerPhone}</p>
+                            {donation.volunteerEmail && (<p className="text-sm text-gray-600 dark:text-gray-400">📧 {donation.volunteerEmail}</p>)}
+                            {donation.volunteerPhone && (<p className="text-sm text-gray-600 dark:text-gray-400">📱 {donation.volunteerPhone}</p>)}
+                          </div>
+                        </div>
+                      )}
+                      {donation.deliveryConfirmCode && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">🔒 Delivery Proof</p>
+                          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                            <p className="text-xs text-green-600 dark:text-green-400 font-semibold">Confirmation Code</p>
+                            <p className="text-xl font-black text-green-700 dark:text-green-300 tracking-widest font-mono">{donation.deliveryConfirmCode}</p>
+                            {donation.deliveredAt && (
+                              <p className="text-xs text-green-600 dark:text-green-400 mt-1">⏰ {new Date(donation.deliveredAt).toLocaleString()}</p>
                             )}
                           </div>
                         </div>

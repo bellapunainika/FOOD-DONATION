@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, getDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { CheckCircle, Heart, Users } from 'lucide-react';
+import { CheckCircle, Heart, WifiOff, User, Phone, Truck, Navigation } from 'lucide-react';
 
 const customMarker = L.divIcon({
   className: 'custom-div-icon',
@@ -29,6 +29,62 @@ export default function OrganizationsDashboard() {
   const [takeVegQuantity, setTakeVegQuantity] = useState<number>(0);
   const [takeNonVegQuantity, setTakeNonVegQuantity] = useState<number>(0);
   const [isAccepting, setIsAccepting] = useState(false);
+
+  // Delivery person form state: { [donationId]: { name, phone } }
+  const [deliveryForms, setDeliveryForms] = useState<{ [id: string]: { name: string; phone: string } }>({});
+  const [savingDelivery, setSavingDelivery] = useState<Set<string>>(new Set());
+  // Live tracking state
+  const [broadcastingIds, setBroadcastingIds] = useState<Set<string>>(new Set());
+  const watchRefs = useRef<{ [id: string]: number }>({});
+
+  useEffect(() => {
+    const refs = watchRefs.current;
+    return () => { Object.values(refs).forEach(id => navigator.geolocation.clearWatch(id)); };
+  }, []);
+
+  const handleDeliveryFormChange = (donationId: string, field: 'name' | 'phone', value: string) => {
+    setDeliveryForms(prev => ({ ...prev, [donationId]: { ...(prev[donationId] || { name: '', phone: '' }), [field]: value } }));
+  };
+
+  const assignDeliveryPerson = async (donationId: string) => {
+    const form = deliveryForms[donationId];
+    if (!form?.name?.trim() || !form?.phone?.trim()) { toast.error('Please fill in both name and phone number.'); return; }
+    setSavingDelivery(prev => { const s = new Set(prev); s.add(donationId); return s; });
+    try {
+      await updateDoc(doc(db, 'donations', donationId), { deliveryPersonName: form.name.trim(), deliveryPersonPhone: form.phone.trim(), trackingActive: false });
+      toast.success('✅ Delivery person assigned! They can now start live tracking.');
+    } catch (err: any) { toast.error('Failed: ' + err.message); }
+    finally { setSavingDelivery(prev => { const s = new Set(prev); s.delete(donationId); return s; }); }
+  };
+
+  const startBroadcasting = (donationId: string) => {
+    if (!navigator.geolocation) { toast.error('Geolocation not supported.'); return; }
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          await updateDoc(doc(db, 'donations', donationId), {
+            currentLocation: { lat: pos.coords.latitude, lng: pos.coords.longitude, lastUpdated: Date.now() },
+            trackingActive: true
+          });
+        } catch (_) {}
+      },
+      (err) => { toast.error('Location error: ' + err.message); stopBroadcasting(donationId); },
+      { enableHighAccuracy: true, maximumAge: 4000 }
+    );
+    watchRefs.current[donationId] = watchId;
+    setBroadcastingIds(prev => { const s = new Set(prev); s.add(donationId); return s; });
+    toast.success('🚗 Live tracking started! Donor can now see your location.');
+  };
+
+  const stopBroadcasting = async (donationId: string) => {
+    if (watchRefs.current[donationId] !== undefined) {
+      navigator.geolocation.clearWatch(watchRefs.current[donationId]);
+      delete watchRefs.current[donationId];
+    }
+    setBroadcastingIds(prev => { const s = new Set(prev); s.delete(donationId); return s; });
+    try { await updateDoc(doc(db, 'donations', donationId), { trackingActive: false }); } catch (_) {}
+    toast('📍 Live tracking stopped.');
+  };
   
   useEffect(() => {
     // Listen for available donations generically (For scaled apps, add geohashing)
@@ -289,35 +345,88 @@ export default function OrganizationsDashboard() {
         
         <div className="space-y-6">
            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
-              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200">Your Active Allocations</h3>
-              <ul className="space-y-4">
+              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200 flex items-center gap-2"><Truck size={20}/> Active Allocations</h3>
+              <ul className="space-y-6">
                  {activeDonations.map(d => (
                     <li key={d.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
                        <span className="font-bold block text-gray-900 dark:text-gray-200">{d.quantityInMeals} Meals from {d.donorName}</span>
-                       <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
-                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 mb-3">
                          {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                          {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                        </div>
-                       <div className="space-y-2 mt-4">
-                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
-                             Status: {d.status.replace('_', ' ')}
-                           </span>
-                           {d.status === 'reserved' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Picked Up
-                               </button>
-                           )}
-                           {d.status === 'picked_up' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Delivered
-                               </button>
-                           )}
+                       <span className="text-xs font-semibold capitalize inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full mb-3">
+                         Status: {d.status.replace('_', ' ')}
+                       </span>
+
+                       {/* ── Delivery Person Section ── */}
+                       {!d.deliveryPersonName ? (
+                         <div className="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                           <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-3 flex items-center gap-2"><User size={15}/> Assign Delivery Person</p>
+                           <div className="space-y-2">
+                             <input
+                               type="text" placeholder="Full Name"
+                               value={deliveryForms[d.id!]?.name || ''}
+                               onChange={e => handleDeliveryFormChange(d.id!, 'name', e.target.value)}
+                               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                             />
+                             <input
+                               type="tel" placeholder="Contact Number"
+                               value={deliveryForms[d.id!]?.phone || ''}
+                               onChange={e => handleDeliveryFormChange(d.id!, 'phone', e.target.value)}
+                               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                             />
+                             <button
+                               onClick={() => d.id && assignDeliveryPerson(d.id)}
+                               disabled={savingDelivery.has(d.id!)}
+                               className="w-full py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold rounded-lg text-sm transition"
+                             >
+                               {savingDelivery.has(d.id!) ? 'Saving...' : '✅ Assign & Enable Tracking'}
+                             </button>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="mt-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2">Delivery Person</p>
+                           <p className="font-semibold text-gray-900 dark:text-gray-200 flex items-center gap-1.5"><User size={14}/> {d.deliveryPersonName}</p>
+                           <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 mt-1"><Phone size={13}/> {d.deliveryPersonPhone}</p>
+                           {/* Tracking toggle */}
+                           <div className="mt-3">
+                             {!broadcastingIds.has(d.id!) ? (
+                               <button
+                                 onClick={() => d.id && startBroadcasting(d.id)}
+                                 className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition"
+                               ><Navigation size={15}/> Start Live Tracking</button>
+                             ) : (
+                               <button
+                                 onClick={() => d.id && stopBroadcasting(d.id)}
+                                 className="w-full flex items-center justify-center gap-2 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg text-sm transition"
+                               ><WifiOff size={15}/> Stop Tracking</button>
+                             )}
+                             {broadcastingIds.has(d.id!) && (
+                               <p className="text-center text-xs text-indigo-500 dark:text-indigo-400 mt-1.5 animate-pulse">📡 Broadcasting live location to donor...</p>
+                             )}
+                           </div>
+                         </div>
+                       )}
+
+                       {/* Status action buttons */}
+                       <div className="space-y-2 mt-3">
+                         {d.status === 'reserved' && (
+                           <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+                             📦 Mark as Picked Up
+                           </button>
+                         )}
+                         {d.status === 'picked_up' && (
+                           <button
+                             onClick={() => { if (d.id) { if (broadcastingIds.has(d.id)) stopBroadcasting(d.id); updateDeliveryStatus(d.id, 'delivered'); }}}
+                             className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition"
+                           >✅ Mark as Delivered</button>
+                         )}
                        </div>
                     </li>
                  ))}
                  {activeDonations.length === 0 && (
-                   <span className="text-sm text-gray-500">No active allocations right now.</span>
+                   <li className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No active allocations right now.</li>
                  )}
               </ul>
            </div>

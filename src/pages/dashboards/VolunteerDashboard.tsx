@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -6,7 +6,7 @@ import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap } from 'lucide-react';
+import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap, Wifi, WifiOff } from 'lucide-react';
 
 const currentLocIcon = L.divIcon({
   className: 'custom-div-icon',
@@ -38,6 +38,46 @@ export default function VolunteerDashboard() {
   
   const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
   const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
+
+  // Live tracking state
+  const [broadcastingIds, setBroadcastingIds] = useState<Set<string>>(new Set());
+  const watchRefs = useRef<{ [id: string]: number }>({});
+
+  // Stop all watches on unmount
+  useEffect(() => {
+    const refs = watchRefs.current;
+    return () => { Object.values(refs).forEach(id => navigator.geolocation.clearWatch(id)); };
+  }, []);
+
+  const startBroadcasting = (donationId: string) => {
+    if (!navigator.geolocation) { toast.error('Geolocation not supported.'); return; }
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          await updateDoc(doc(db, 'donations', donationId), {
+            currentLocation: { lat: pos.coords.latitude, lng: pos.coords.longitude, lastUpdated: Date.now() },
+            trackingActive: true
+          });
+        } catch (_) {}
+      },
+      (err) => { toast.error('Location error: ' + err.message); stopBroadcasting(donationId); },
+      { enableHighAccuracy: true, maximumAge: 4000 }
+    );
+    watchRefs.current[donationId] = watchId;
+    setBroadcastingIds(prev => { const s = new Set(prev); s.add(donationId); return s; });
+    toast.success('🗣️ Live tracking started! Donor can see your location.');
+  };
+
+  const stopBroadcasting = async (donationId: string) => {
+    if (watchRefs.current[donationId] !== undefined) {
+      navigator.geolocation.clearWatch(watchRefs.current[donationId]);
+      delete watchRefs.current[donationId];
+    }
+    setBroadcastingIds(prev => { const s = new Set(prev); s.delete(donationId); return s; });
+    try { await updateDoc(doc(db, 'donations', donationId), { trackingActive: false }); } catch (_) {}
+  };
+
+  const generateProofCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   // Sync availability state with userProfile
   useEffect(() => {
@@ -213,14 +253,36 @@ export default function VolunteerDashboard() {
 
   const updateDeliveryStatus = async (donationId: string, status: 'picked_up' | 'delivered') => {
       try {
-          await updateDoc(doc(db, 'donations', donationId), { status });
+          const updates: any = { status };
+          if (status === 'delivered') {
+            // Generate proof code + capture GPS at delivery
+            updates.deliveryConfirmCode = generateProofCode();
+            updates.deliveredAt = Date.now();
+            // Try to get current GPS for proof
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                  try {
+                    await updateDoc(doc(db, 'donations', donationId), {
+                      deliveredGPS: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+                    });
+                  } catch (_) {}
+                },
+                () => {}, { timeout: 5000 }
+              );
+            }
+            // Stop broadcasting
+            if (broadcastingIds.has(donationId)) stopBroadcasting(donationId);
+            updates.trackingActive = false;
+          }
+          await updateDoc(doc(db, 'donations', donationId), updates);
           if(status === 'delivered') {
-              toast.success("🌟 Delivery completed! You're making a difference\n💪 Keep up the amazing work!");
+              toast.success('🌟 Delivery completed! Proof code saved for the donor.💪 Keep up the amazing work!');
           } else {
-              toast.success("📦 Package picked up! On the way now\n🚗 Safe journey ahead!");
+              toast.success('📦 Package picked up! Start live tracking now.');
           }
       } catch (err: any) {
-          toast.error("Failed: " + err.message);
+          toast.error('Failed: ' + err.message);
       }
   };
 
@@ -402,16 +464,36 @@ export default function VolunteerDashboard() {
                   <Truck /> Your Active Tasks
               </h3>
               {activeDeliveries.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-8">No active tasks.</p>}
-              <div className="space-y-4">
+              <div className="space-y-5">
                   {activeDeliveries.map(d => (
                      <div key={d.id} className="p-4 border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm">
                          <div className="font-bold text-lg text-gray-900 dark:text-gray-200">{d.donorName}</div>
-                         <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
-                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 mb-3">
                            {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                            {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                          </div>
                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{d.quantityInMeals} Meals</div>
+
+                         {/* Live Tracking Controls */}
+                         <div className="mb-3 p-3 bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2 flex items-center gap-1">
+                             <Navigation size={13}/> Live Location
+                           </p>
+                           {!broadcastingIds.has(d.id!) ? (
+                             <button
+                               onClick={() => d.id && startBroadcasting(d.id)}
+                               className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition"
+                             ><Wifi size={14}/> Start Live Tracking</button>
+                           ) : (
+                             <button
+                               onClick={() => d.id && stopBroadcasting(d.id)}
+                               className="w-full flex items-center justify-center gap-2 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg text-sm transition"
+                             ><WifiOff size={14}/> Stop Tracking</button>
+                           )}
+                           {broadcastingIds.has(d.id!) && (
+                             <p className="text-center text-xs text-indigo-500 dark:text-indigo-400 mt-1 animate-pulse">📡 Donor can see your live location</p>
+                           )}
+                         </div>
 
                          <div className="space-y-2">
                             {d.status === 'reserved' && (
@@ -529,18 +611,33 @@ export default function VolunteerDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">✅ Delivered On</p>
-                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">
+                          {donation.deliveredAt ? new Date(donation.deliveredAt).toLocaleString() : new Date(donation.createdAt).toLocaleString()}
+                        </p>
                       </div>
                       {donation.donorName && (
                         <div>
                           <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🏪 From</p>
                           <div>
                             <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.donorName}</p>
-                            {donation.donorEmail && (
-                              <p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>
-                            )}
-                            {donation.donorPhone && (
-                              <p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>
+                            {donation.donorEmail && (<p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>)}
+                            {donation.donorPhone && (<p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>)}
+                          </div>
+                        </div>
+                      )}
+                      {donation.deliveryConfirmCode && (
+                        <div className="md:col-span-2">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🔒 Delivery Proof</p>
+                          <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                            <div>
+                              <p className="text-xs text-green-600 dark:text-green-400 font-semibold">Confirmation Code</p>
+                              <p className="text-2xl font-black text-green-700 dark:text-green-300 tracking-widest font-mono">{donation.deliveryConfirmCode}</p>
+                            </div>
+                            {donation.deliveredGPS && (
+                              <div className="ml-4 border-l border-green-300 dark:border-green-700 pl-4">
+                                <p className="text-xs text-green-600 dark:text-green-400 font-semibold">GPS at Delivery</p>
+                                <p className="text-xs text-green-700 dark:text-green-300 font-mono">{donation.deliveredGPS.lat.toFixed(5)}, {donation.deliveredGPS.lng.toFixed(5)}</p>
+                              </div>
                             )}
                           </div>
                         </div>

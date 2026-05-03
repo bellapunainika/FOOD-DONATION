@@ -50,6 +50,12 @@ export interface RawMaterial {
   notes: string;
 }
 
+export interface LiveLocation {
+  lat: number;
+  lng: number;
+  lastUpdated: number; // timestamp
+}
+
 export interface FoodDonation {
   id?: string;
   donorId: string;
@@ -79,11 +85,21 @@ export interface FoodDonation {
   organizationName?: string;
   organizationEmail?: string;
   organizationPhone?: string;
+  // Organization delivery person details
+  deliveryPersonName?: string;
+  deliveryPersonPhone?: string;
   // Volunteer details (when accepted by a volunteer)
   volunteerId?: string;
   volunteerName?: string;
   volunteerEmail?: string;
   volunteerPhone?: string;
+  // Live tracking
+  currentLocation?: LiveLocation;
+  trackingActive?: boolean;
+  // Delivery proof (volunteers)
+  deliveryConfirmCode?: string;  // 6-char alphanumeric code generated on delivery
+  deliveredAt?: number;          // timestamp of delivery
+  deliveredGPS?: { lat: number; lng: number }; // GPS at delivery point
   location: LocationData;
   createdAt: number;
 }
