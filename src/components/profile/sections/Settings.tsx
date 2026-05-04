@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Lock, Eye, EyeOff, ToggleLeft, AlertCircle, LogOut, Check } from 'lucide-react';
+import { Bell, Lock, Eye, EyeOff, ToggleLeft, AlertCircle, LogOut, Check, Trash2, X } from 'lucide-react';
 import { UserProfile } from '../../../types';
 import toast from 'react-hot-toast';
 
@@ -8,19 +8,27 @@ interface SettingsProps {
   onLogout: () => void;
   onAvailabilityToggle?: (available: boolean) => Promise<void>;
   onPasswordChange?: (oldPassword: string, newPassword: string) => Promise<void>;
+  onDeleteAccount?: (password: string) => Promise<void>;
 }
 
 const inputCls = 'w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-colors';
 const labelCls = 'block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2';
 const cardCls  = 'bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-300';
 
-export default function Settings({ user, onLogout, onAvailabilityToggle, onPasswordChange }: SettingsProps) {
+export default function Settings({ user, onLogout, onAvailabilityToggle, onPasswordChange, onDeleteAccount }: SettingsProps) {
   const [showPasswordForm,    setShowPasswordForm]    = useState(false);
   const [showPassword,        setShowPassword]        = useState(false);
   const [isChangingPassword,  setIsChangingPassword]  = useState(false);
   const [isSaving,            setIsSaving]            = useState(false);
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [notifSettings, setNotifSettings] = useState({ donations: true, pickups: true, deliveries: true, community: false });
+
+  // Delete account state
+  const [showDeleteModal,    setShowDeleteModal]    = useState(false);
+  const [deleteConfirmText,  setDeleteConfirmText]  = useState('');
+  const [deletePassword,     setDeletePassword]     = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [isDeletingAccount,  setIsDeletingAccount]  = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +46,19 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
 
   const handleAvailToggle = async () => {
     try { if (onAvailabilityToggle) { await onAvailabilityToggle(!(user.isAvailable ?? false)); toast.success('Availability updated!'); } } catch (err: any) { toast.error(err.message || 'Failed to update availability'); }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') { toast.error('Please type DELETE to confirm.'); return; }
+    if (!onDeleteAccount) { toast.error('Account deletion not configured.'); return; }
+    setIsDeletingAccount(true);
+    try {
+      await onDeleteAccount(deletePassword);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete account. Please try again.');
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   const NOTIF_ITEMS = [
@@ -135,12 +156,120 @@ export default function Settings({ user, onLogout, onAvailabilityToggle, onPassw
 
       {/* Danger Zone */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-red-200 dark:border-red-800 p-6 transition-colors duration-300">
-        <h3 className="text-xl font-bold text-red-900 dark:text-red-400 mb-4">Danger Zone</h3>
-        <button onClick={onLogout} className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-gray-100 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+        <h3 className="text-xl font-bold text-red-900 dark:text-red-400 mb-1">Danger Zone</h3>
+        <p className="text-sm text-red-700 dark:text-red-500 mb-4">Irreversible and destructive actions.</p>
+
+        <button onClick={onLogout} className="w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-gray-100 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 mb-3">
           <LogOut size={18} /> Logout from All Devices
         </button>
-        <p className="text-xs text-red-700 dark:text-red-400 mt-3">This will log you out from your account on all devices.</p>
+        <p className="text-xs text-red-700 dark:text-red-400 mb-5">This will log you out from your account on all devices.</p>
+
+        <div className="border-t border-red-200 dark:border-red-800 pt-5">
+          <button
+            onClick={() => { setShowDeleteModal(true); setDeleteConfirmText(''); setDeletePassword(''); }}
+            className="w-full px-4 py-2.5 bg-red-900 hover:bg-red-800 dark:bg-red-950 dark:hover:bg-red-900 text-red-100 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <Trash2 size={18} /> Permanently Delete Account
+          </button>
+          <p className="text-xs text-red-700 dark:text-red-400 mt-2">
+            This will permanently erase all your data. This action <strong>cannot be undone</strong>.
+          </p>
+        </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md border border-red-200 dark:border-red-900 overflow-hidden">
+            {/* Modal header */}
+            <div className="bg-gradient-to-r from-red-700 to-red-900 px-6 py-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <Trash2 size={20} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-lg">Delete Account</h2>
+                  <p className="text-red-200 text-xs">This is permanent and irreversible</p>
+                </div>
+              </div>
+              <button onClick={() => setShowDeleteModal(false)} className="text-white/70 hover:text-white transition-colors">
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Warning */}
+              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                <p className="text-sm font-bold text-red-800 dark:text-red-300 mb-2">⚠️ What will be deleted:</p>
+                <ul className="text-sm text-red-700 dark:text-red-400 space-y-1 list-disc list-inside">
+                  <li>Your profile and personal information</li>
+                  <li>All activity history and records</li>
+                  <li>Your login credentials</li>
+                  <li>All associated data on our platform</li>
+                </ul>
+              </div>
+
+              {/* Confirm text */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Type <span className="font-mono font-black text-red-600 dark:text-red-400">DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE here"
+                  className="w-full px-4 py-2.5 border-2 border-red-300 dark:border-red-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-red-500 outline-none transition-colors font-mono tracking-widest"
+                  autoComplete="off"
+                />
+              </div>
+
+              {/* Password re-auth */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Enter your password to authenticate
+                </label>
+                <div className="relative">
+                  <input
+                    type={showDeletePassword ? 'text' : 'password'}
+                    value={deletePassword}
+                    onChange={e => setDeletePassword(e.target.value)}
+                    placeholder="Your current password"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-red-500 outline-none transition-colors"
+                  />
+                  <button type="button" onClick={() => setShowDeletePassword(!showDeletePassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-200">
+                    {showDeletePassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+                  If you signed in with Google, leave this field empty.
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeletingAccount || deleteConfirmText !== 'DELETE'}
+                  className="flex-1 px-4 py-2.5 bg-red-700 hover:bg-red-800 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  {isDeletingAccount ? (
+                    <><span className="animate-spin inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full" />Deleting...</>
+                  ) : (
+                    <><Trash2 size={16} />Delete Forever</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

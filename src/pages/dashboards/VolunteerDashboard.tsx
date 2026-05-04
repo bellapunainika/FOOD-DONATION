@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -6,7 +6,7 @@ import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap } from 'lucide-react';
+import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap, Radio } from 'lucide-react';
 
 const currentLocIcon = L.divIcon({
   className: 'custom-div-icon',
@@ -38,6 +38,46 @@ export default function VolunteerDashboard() {
   
   const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
   const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
+
+  // Live tracking — auto-managed, no manual toggle
+  const watchRefs = useRef<{ [id: string]: number }>({});
+  const broadcastingIds = useRef<Set<string>>(new Set());
+
+  // Stop all watches on unmount
+  useEffect(() => {
+    const refs = watchRefs.current;
+    return () => { Object.values(refs).forEach(id => navigator.geolocation.clearWatch(id)); };
+  }, []);
+
+  const startBroadcasting = (donationId: string) => {
+    if (!navigator.geolocation) return;
+    if (broadcastingIds.current.has(donationId)) return; // already tracking
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          await updateDoc(doc(db, 'donations', donationId), {
+            currentLocation: { lat: pos.coords.latitude, lng: pos.coords.longitude, lastUpdated: Date.now() },
+            trackingActive: true
+          });
+        } catch (_) {}
+      },
+      () => {}, // silent error — keep trying
+      { enableHighAccuracy: true, maximumAge: 4000 }
+    );
+    watchRefs.current[donationId] = watchId;
+    broadcastingIds.current.add(donationId);
+  };
+
+  const stopBroadcasting = async (donationId: string) => {
+    if (watchRefs.current[donationId] !== undefined) {
+      navigator.geolocation.clearWatch(watchRefs.current[donationId]);
+      delete watchRefs.current[donationId];
+    }
+    broadcastingIds.current.delete(donationId);
+    try { await updateDoc(doc(db, 'donations', donationId), { trackingActive: false }); } catch (_) {}
+  };
+
+  const generateProofCode = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   // Sync availability state with userProfile
   useEffect(() => {
@@ -174,8 +214,11 @@ export default function VolunteerDashboard() {
                   volunteerId: userProfile.uid,
                   volunteerName: volName,
                   volunteerEmail: userProfile.email || '',
-                  volunteerPhone: userProfile.phoneNumber || ''
+                  volunteerPhone: userProfile.phoneNumber || '',
+                  trackingActive: true
               });
+              // Auto-start tracking for the existing donation doc
+              startBroadcasting(acceptingDonation.id!);
           } else {
               const updates: any = { quantityInMeals: currentData.quantityInMeals - takingTotal };
               if (currentData.foodCategory === 'Both') {
@@ -192,6 +235,7 @@ export default function VolunteerDashboard() {
                   volunteerName: volName,
                   volunteerEmail: userProfile.email || '',
                   volunteerPhone: userProfile.phoneNumber || '',
+                  trackingActive: true,
                   createdAt: Date.now()
               };
               if (currentData.foodCategory === 'Both') {
@@ -200,9 +244,12 @@ export default function VolunteerDashboard() {
               }
               delete newDonation.id;
               
-              await addDoc(collection(db, 'donations'), newDonation);
+              const newDoc = await addDoc(collection(db, 'donations'), newDonation);
+              // Auto-start tracking for the new donation doc
+              startBroadcasting(newDoc.id);
           }
-          toast.success("🎯 Wow! You've accepted a delivery\n⏱️ Head to the pickup location now!");
+          // Auto-start tracking for existing donation
+          toast.success("🎯 Wow! You've accepted a delivery\n📡 Live tracking started automatically!");
           setAcceptingDonation(null);
       } catch(err: any) {
           toast.error("Failed: " + err.message);
@@ -213,14 +260,37 @@ export default function VolunteerDashboard() {
 
   const updateDeliveryStatus = async (donationId: string, status: 'picked_up' | 'delivered') => {
       try {
-          await updateDoc(doc(db, 'donations', donationId), { status });
-          if(status === 'delivered') {
-              toast.success("🌟 Delivery completed! You're making a difference\n💪 Keep up the amazing work!");
+          const updates: any = { status };
+          if (status === 'delivered') {
+            // Generate proof code + capture GPS at delivery
+            updates.deliveryConfirmCode = generateProofCode();
+            updates.deliveredAt = Date.now();
+            // Try to get current GPS for proof
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                  try {
+                    await updateDoc(doc(db, 'donations', donationId), {
+                      deliveredGPS: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+                    });
+                  } catch (_) {}
+                },
+                () => {}, { timeout: 5000 }
+              );
+            }
+            // Auto-stop tracking on delivery
+            await stopBroadcasting(donationId);
+            updates.trackingActive = false;
+            toast.success('🌟 Delivery completed! Proof code saved for the donor. 💪 Keep up the amazing work!');
           } else {
-              toast.success("📦 Package picked up! On the way now\n🚗 Safe journey ahead!");
+            // picked_up — ensure tracking is active
+            startBroadcasting(donationId);
+            updates.trackingActive = true;
+            toast.success('📦 Package picked up! Live tracking is broadcasting to the donor.');
           }
+          await updateDoc(doc(db, 'donations', donationId), updates);
       } catch (err: any) {
-          toast.error("Failed: " + err.message);
+          toast.error('Failed: ' + err.message);
       }
   };
 
@@ -402,16 +472,26 @@ export default function VolunteerDashboard() {
                   <Truck /> Your Active Tasks
               </h3>
               {activeDeliveries.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-8">No active tasks.</p>}
-              <div className="space-y-4">
+              <div className="space-y-5">
                   {activeDeliveries.map(d => (
                      <div key={d.id} className="p-4 border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm">
                          <div className="font-bold text-lg text-gray-900 dark:text-gray-200">{d.donorName}</div>
-                         <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
-                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 mb-3">
                            {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                            {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                          </div>
                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{d.quantityInMeals} Meals</div>
+
+                         {/* Auto Live Tracking indicator */}
+                         <div className="mb-3 p-3 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-xl">
+                           <div className="flex items-center gap-2">
+                             <Radio size={14} className="text-green-500 animate-pulse" />
+                             <p className="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
+                               Live tracking active
+                             </p>
+                           </div>
+                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Your location is automatically shared with the donor during delivery.</p>
+                         </div>
 
                          <div className="space-y-2">
                             {d.status === 'reserved' && (
@@ -529,18 +609,33 @@ export default function VolunteerDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-2">✅ Delivered On</p>
-                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{new Date(donation.createdAt).toLocaleString()}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">
+                          {donation.deliveredAt ? new Date(donation.deliveredAt).toLocaleString() : new Date(donation.createdAt).toLocaleString()}
+                        </p>
                       </div>
                       {donation.donorName && (
                         <div>
                           <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🏪 From</p>
                           <div>
                             <p className="text-sm text-gray-900 dark:text-gray-200 font-medium">{donation.donorName}</p>
-                            {donation.donorEmail && (
-                              <p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>
-                            )}
-                            {donation.donorPhone && (
-                              <p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>
+                            {donation.donorEmail && (<p className="text-sm text-gray-600">📧 {donation.donorEmail}</p>)}
+                            {donation.donorPhone && (<p className="text-sm text-gray-600">📱 {donation.donorPhone}</p>)}
+                          </div>
+                        </div>
+                      )}
+                      {donation.deliveryConfirmCode && (
+                        <div className="md:col-span-2">
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">🔒 Delivery Proof</p>
+                          <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                            <div>
+                              <p className="text-xs text-green-600 dark:text-green-400 font-semibold">Confirmation Code</p>
+                              <p className="text-2xl font-black text-green-700 dark:text-green-300 tracking-widest font-mono">{donation.deliveryConfirmCode}</p>
+                            </div>
+                            {donation.deliveredGPS && (
+                              <div className="ml-4 border-l border-green-300 dark:border-green-700 pl-4">
+                                <p className="text-xs text-green-600 dark:text-green-400 font-semibold">GPS at Delivery</p>
+                                <p className="text-xs text-green-700 dark:text-green-300 font-mono">{donation.deliveredGPS.lat.toFixed(5)}, {donation.deliveredGPS.lng.toFixed(5)}</p>
+                              </div>
                             )}
                           </div>
                         </div>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, getDoc, addDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebase';
+import { sendSignInLinkToEmail } from 'firebase/auth';
 import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { CheckCircle, Heart, Users } from 'lucide-react';
+import { CheckCircle, Heart, User, Phone, Truck, Navigation, Radio, Mail, Clock, Send } from 'lucide-react';
 
 const customMarker = L.divIcon({
   className: 'custom-div-icon',
@@ -29,6 +30,66 @@ export default function OrganizationsDashboard() {
   const [takeVegQuantity, setTakeVegQuantity] = useState<number>(0);
   const [takeNonVegQuantity, setTakeNonVegQuantity] = useState<number>(0);
   const [isAccepting, setIsAccepting] = useState(false);
+
+  // Delivery person form state: { [donationId]: { name, email } }
+  const [deliveryForms, setDeliveryForms] = useState<{ [id: string]: { name: string; email: string } }>({});
+  const [savingDelivery, setSavingDelivery] = useState<Set<string>>(new Set());
+  const [linkSentIds, setLinkSentIds] = useState<Set<string>>(new Set());
+
+  const handleDeliveryFormChange = (donationId: string, field: 'name' | 'email', value: string) => {
+    setDeliveryForms(prev => ({ ...prev, [donationId]: { ...(prev[donationId] || { name: '', email: '' }), [field]: value } }));
+  };
+
+  const assignDeliveryPerson = async (donationId: string) => {
+    const form = deliveryForms[donationId];
+    if (!form?.name?.trim()) { toast.error('Please enter the delivery person\'s name.'); return; }
+    if (!form?.email?.trim() || !form.email.includes('@')) { toast.error('Please enter a valid Gmail address.'); return; }
+
+    setSavingDelivery(prev => { const s = new Set(prev); s.add(donationId); return s; });
+    try {
+      const name  = form.name.trim();
+      const email = form.email.trim().toLowerCase();
+
+      // 1. Save delivery person details to Firestore (unverified)
+      await updateDoc(doc(db, 'donations', donationId), {
+        deliveryPersonName:  name,
+        deliveryPersonEmail: email,
+        deliveryVerified:    false,
+        trackingActive:      false,
+      });
+
+      // 2. Store email in localStorage so the verify page can auto-fill it
+      window.localStorage.setItem(`deliveryEmail_${donationId}`, email);
+
+      // 3. Send Firebase email sign-in link to the delivery person's Gmail
+      const appUrl = window.location.origin;
+      // Pass email in URL so the verify page can auto-fill without asking the user
+      await sendSignInLinkToEmail(auth, email, {
+        url: `${appUrl}/delivery-verify?donationId=${donationId}&de=${encodeURIComponent(email)}`,
+        handleCodeInApp: true,
+      });
+
+      setLinkSentIds(prev => { const s = new Set(prev); s.add(donationId); return s; });
+      toast.success(`📧 Verification link sent to ${email}! Tracking will start when they open it.`);
+    } catch (err: any) {
+      toast.error('Failed to send link: ' + err.message);
+    } finally {
+      setSavingDelivery(prev => { const s = new Set(prev); s.delete(donationId); return s; });
+    }
+  };
+
+  const resendVerificationLink = async (donationId: string, email: string) => {
+    try {
+      const appUrl = window.location.origin;
+      await sendSignInLinkToEmail(auth, email, {
+        url: `${appUrl}/delivery-verify?donationId=${donationId}&de=${encodeURIComponent(email)}`,
+        handleCodeInApp: true,
+      });
+      toast.success('📧 Verification link resent!');
+    } catch (err: any) {
+      toast.error('Failed to resend: ' + err.message);
+    }
+  };
   
   useEffect(() => {
     // Listen for available donations generically (For scaled apps, add geohashing)
@@ -168,16 +229,20 @@ export default function OrganizationsDashboard() {
 
   const updateDeliveryStatus = async (donationId: string, status: 'picked_up' | 'delivered') => {
       try {
-          await updateDoc(doc(db, 'donations', donationId), { status });
-          if(status === 'delivered') {
-              toast.success("Hooray! Delivery marked as completed.");
+          const updates: any = { status };
+          if (status === 'delivered') {
+            // Signal the delivery person's tracking page to stop
+            updates.trackingActive = false;
+            toast.success("Hooray! Delivery marked as completed.");
           } else {
-              toast.success("Marked as picked up.");
+            toast.success("Marked as picked up.");
           }
+          await updateDoc(doc(db, 'donations', donationId), updates);
       } catch (err: any) {
           toast.error("Failed: " + err.message);
       }
   };
+
 
   const calculateUrgency = (expiryTime: number) => {
       const timeLeft = expiryTime - Date.now();
@@ -289,35 +354,110 @@ export default function OrganizationsDashboard() {
         
         <div className="space-y-6">
            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
-              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200">Your Active Allocations</h3>
-              <ul className="space-y-4">
+              <h3 className="font-bold text-xl mb-4 text-gray-900 dark:text-gray-200 flex items-center gap-2"><Truck size={20}/> Active Allocations</h3>
+              <ul className="space-y-6">
                  {activeDonations.map(d => (
                     <li key={d.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
                        <span className="font-bold block text-gray-900 dark:text-gray-200">{d.quantityInMeals} Meals from {d.donorName}</span>
-                       <div className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mt-2">Donor Contact:</div>
-                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 mb-3">
                          {d.donorEmail && <p>📧 {d.donorEmail}</p>}
                          {d.donorPhone && <p>📱 {d.donorPhone}</p>}
                        </div>
-                       <div className="space-y-2 mt-4">
-                           <span className="text-sm font-semibold capitalize inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
-                             Status: {d.status.replace('_', ' ')}
-                           </span>
-                           {d.status === 'reserved' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Picked Up
-                               </button>
+                       <span className="text-xs font-semibold capitalize inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full mb-3">
+                         Status: {d.status.replace('_', ' ')}
+                       </span>
+
+                       {/* ── Delivery Person Section ── */}
+                       {!d.deliveryPersonName ? (
+                         <div className="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                           <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2"><User size={15}/> Assign Delivery Person</p>
+                           <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">Enter the delivery person's name and Gmail. A verification link will be sent to their phone to activate live tracking.</p>
+                           <div className="space-y-2">
+                             <input
+                               type="text" placeholder="Full Name"
+                               value={deliveryForms[d.id!]?.name || ''}
+                               onChange={e => handleDeliveryFormChange(d.id!, 'name', e.target.value)}
+                               className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                             />
+                             <div className="relative">
+                               <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                               <input
+                                 type="email" placeholder="Gmail address (e.g. name@gmail.com)"
+                                 value={deliveryForms[d.id!]?.email || ''}
+                                 onChange={e => handleDeliveryFormChange(d.id!, 'email', e.target.value)}
+                                 className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-amber-400 outline-none"
+                               />
+                             </div>
+                             <button
+                               onClick={() => d.id && assignDeliveryPerson(d.id)}
+                               disabled={savingDelivery.has(d.id!)}
+                               className="w-full py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold rounded-lg text-sm transition flex items-center justify-center gap-2"
+                             >
+                               {savingDelivery.has(d.id!) ? (
+                                 <><span className="animate-spin inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> Sending…</>
+                               ) : (
+                                 <><Send size={14} /> Send Verification Link</>
+                               )}
+                             </button>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="mt-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl">
+                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2">Delivery Person</p>
+                           <p className="font-semibold text-gray-900 dark:text-gray-200 flex items-center gap-1.5"><User size={14}/> {d.deliveryPersonName}</p>
+                           {(d as any).deliveryPersonEmail && (
+                             <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 mt-1"><Mail size={13}/> {(d as any).deliveryPersonEmail}</p>
                            )}
-                           {d.status === 'picked_up' && (
-                               <button onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')} className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition mt-2">
-                                  Mark as Delivered
-                               </button>
+
+                           {/* Tracking status */}
+                           {(d as any).deliveryVerified && d.trackingActive ? (
+                             <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                               <Radio size={14} className="text-green-500 animate-pulse" />
+                               <span className="text-xs font-bold text-green-700 dark:text-green-400">Live tracking active — donor can see location</span>
+                             </div>
+                           ) : (d as any).deliveryVerified ? (
+                             <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
+                               <Radio size={14} className="text-blue-500" />
+                               <span className="text-xs font-bold text-blue-700 dark:text-blue-400">Email verified — GPS initialising…</span>
+                             </div>
+                           ) : (
+                             <div className="mt-3 space-y-2">
+                               <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg">
+                                 <Clock size={14} className="text-amber-500 animate-pulse" />
+                                 <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Awaiting Gmail verification…</span>
+                               </div>
+                               {(d as any).deliveryPersonEmail && (
+                                 <button
+                                   onClick={() => d.id && (d as any).deliveryPersonEmail && resendVerificationLink(d.id, (d as any).deliveryPersonEmail)}
+                                   className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-600 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition"
+                                 >
+                                   <Send size={12} /> Resend Verification Link
+                                 </button>
+                               )}
+                             </div>
                            )}
+                         </div>
+                       )}
+
+
+                       {/* Status action buttons */}
+                       <div className="space-y-2 mt-3">
+                         {d.status === 'reserved' && (
+                           <button onClick={() => d.id && updateDeliveryStatus(d.id, 'picked_up')} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+                             📦 Mark as Picked Up
+                           </button>
+                         )}
+                         {d.status === 'picked_up' && (
+                           <button
+                             onClick={() => d.id && updateDeliveryStatus(d.id, 'delivered')}
+                             className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition"
+                           >✅ Mark as Delivered</button>
+                         )}
                        </div>
                     </li>
                  ))}
                  {activeDonations.length === 0 && (
-                   <span className="text-sm text-gray-500">No active allocations right now.</span>
+                   <li className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No active allocations right now.</li>
                  )}
               </ul>
            </div>
