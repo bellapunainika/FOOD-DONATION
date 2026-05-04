@@ -21,6 +21,7 @@ export default function Register() {
   const [locationStr, setLocationStr] = useState('');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
+  const [donorType, setDonorType] = useState('Restaurant');
   
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(false);
@@ -99,8 +100,7 @@ export default function Register() {
         toast.error("Failed to send verification email. Please check your Firebase Console settings.");
       }
       
-      // 3. Save profile doc
-      await setDoc(doc(db, 'users', userCred.user.uid), {
+      const userDoc: any = {
         uid: userCred.user.uid,
         email: email,
         phoneNumber: phoneNumber,
@@ -109,7 +109,15 @@ export default function Register() {
         aadharNumber: aadharNumber,
         location: locationData || { address: locationStr, lat: 0, lng: 0 },
         createdAt: Date.now()
-      });
+      };
+
+      if (role === 'donor') {
+        userDoc.donorType = donorType;
+        userDoc.organizationName = fullName;
+      }
+
+      // 3. Save profile doc
+      await setDoc(doc(db, 'users', userCred.user.uid), userDoc);
       
       toast.success('Account created! Please check your email (and Spam folder) for the verification link.', { duration: 8000 });
       setWaitingForVerification(true);
@@ -209,7 +217,7 @@ export default function Register() {
             }`}
           >
             <Heart className={`w-8 h-8 mb-2 ${role === 'organizations' ? 'text-brand-600' : 'text-gray-400'}`} />
-            <span className="font-bold">organizations</span>
+            <span className="font-bold">Organizations</span>
             <span className="text-xs text-center mt-1 opacity-80">Organizations</span>
           </button>
 
@@ -280,6 +288,21 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            {role === 'donor' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Donor Type</label>
+                <select
+                  required
+                  className="appearance-none block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  value={donorType}
+                  onChange={(e) => setDonorType(e.target.value)}
+                >
+                  <option value="Restaurant">Restaurant</option>
+                  <option value="Event">Event organizer</option>
+                  <option value="Catering Service">Catering Service</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
