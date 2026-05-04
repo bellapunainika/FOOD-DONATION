@@ -24,7 +24,7 @@ export default function Register() {
   
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
 
   // Auto-poll for email verification
@@ -37,6 +37,7 @@ export default function Register() {
             await auth.currentUser.reload();
             if (auth.currentUser.emailVerified) {
               clearInterval(interval);
+              await refreshUserProfile();
               toast.success('Email verified successfully!');
               navigate('/onboarding');
             }
@@ -47,7 +48,7 @@ export default function Register() {
       }, 3000);
     }
     return () => clearInterval(interval);
-  }, [waitingForVerification, navigate]);
+  }, [waitingForVerification, navigate, refreshUserProfile]);
 
   const detectLocation = () => {
     if (!navigator.geolocation) {
@@ -152,6 +153,7 @@ export default function Register() {
               try {
                 await auth.currentUser?.reload();
                 if (auth.currentUser?.emailVerified) {
+                  await refreshUserProfile();
                   toast.success('Email verified successfully!');
                   navigate('/onboarding');
                 } else {

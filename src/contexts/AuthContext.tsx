@@ -16,6 +16,7 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   signInWithGoogle: (role?: UserRole) => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -28,6 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  async function refreshUserProfile() {
+    if (auth.currentUser) {
+      await fetchUserProfile(auth.currentUser.uid);
+    }
+  }
 
   async function fetchUserProfile(uid: string) {
     try {
@@ -93,7 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userProfile,
     loading,
     logout,
-    signInWithGoogle
+    signInWithGoogle,
+    refreshUserProfile
   };
 
   return (
