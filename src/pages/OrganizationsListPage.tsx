@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Heart, Users, BarChart3, Calendar, ArrowLeft, MapPin } from 'lucide-react';
+import { Heart, Users, BarChart3, Calendar, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ReceivedDonation {

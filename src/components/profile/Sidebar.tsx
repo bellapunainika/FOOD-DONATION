@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   User,
-  FileText,
   Award,
   Settings,
   LogOut,
