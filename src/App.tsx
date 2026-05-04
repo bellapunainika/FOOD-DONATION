@@ -4,7 +4,6 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
-import AIChatWidget from './components/AIChatWidget';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Pages
@@ -68,7 +67,6 @@ function AppShell() {
           />
         </Routes>
       </main>
-      {!isBare && <AIChatWidget />}
       <Toaster position="top-right" />
     </div>
   );

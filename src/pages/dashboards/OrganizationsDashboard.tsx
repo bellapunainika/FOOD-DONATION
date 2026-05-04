@@ -7,7 +7,7 @@ import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { CheckCircle, Heart, User, Phone, Truck, Navigation, Radio, Mail, Clock, Send } from 'lucide-react';
+import { CheckCircle, Heart, User, Truck, Radio, Mail, Clock, Send } from 'lucide-react';
 
 const customMarker = L.divIcon({
   className: 'custom-div-icon',
@@ -34,7 +34,6 @@ export default function OrganizationsDashboard() {
   // Delivery person form state: { [donationId]: { name, email } }
   const [deliveryForms, setDeliveryForms] = useState<{ [id: string]: { name: string; email: string } }>({});
   const [savingDelivery, setSavingDelivery] = useState<Set<string>>(new Set());
-  const [linkSentIds, setLinkSentIds] = useState<Set<string>>(new Set());
 
   const handleDeliveryFormChange = (donationId: string, field: 'name' | 'email', value: string) => {
     setDeliveryForms(prev => ({ ...prev, [donationId]: { ...(prev[donationId] || { name: '', email: '' }), [field]: value } }));
@@ -69,7 +68,6 @@ export default function OrganizationsDashboard() {
         handleCodeInApp: true,
       });
 
-      setLinkSentIds(prev => { const s = new Set(prev); s.add(donationId); return s; });
       toast.success(`📧 Verification link sent to ${email}! Tracking will start when they open it.`);
     } catch (err: any) {
       toast.error('Failed to send link: ' + err.message);
