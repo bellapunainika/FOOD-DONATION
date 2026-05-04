@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { auth } from '../../firebase';
+import { EmailAuthProvider, reauthenticateWithCredential, deleteUser, GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import { UserProfile } from '../../types';
 import Sidebar from '../../components/profile/Sidebar';
 import ProfileHeader from '../../components/profile/ProfileHeader';
@@ -68,14 +70,30 @@ export default function VolunteerProfile({
         isAvailable: available,
         lastAvailabilityToggle: Date.now(),
       });
-      toast.success(
-        `You are now ${available ? 'available' : 'unavailable'}`
-      );
+      toast.success(`You are now ${available ? 'available' : 'unavailable'}`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update availability');
       throw error;
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async (password: string) => {
+    if (!auth.currentUser) throw new Error('Not logged in.');
+    try {
+      if (password) {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email || '', password);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+      } else {
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(auth.currentUser, provider);
+      }
+      await deleteDoc(doc(db, 'users', user.uid));
+      await deleteUser(auth.currentUser);
+      onLogout();
+    } catch (err: any) {
+      throw new Error(err.message || 'Re-authentication failed. Please try again.');
     }
   };
 
@@ -109,6 +127,7 @@ export default function VolunteerProfile({
             user={user}
             onLogout={onLogout}
             onAvailabilityToggle={handleAvailabilityToggle}
+            onDeleteAccount={handleDeleteAccount}
           />
         );
       default:

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { auth } from '../../firebase';
+import { EmailAuthProvider, reauthenticateWithCredential, deleteUser, GoogleAuthProvider, reauthenticateWithPopup } from 'firebase/auth';
 import { UserProfile } from '../../types';
 import Sidebar from '../../components/profile/Sidebar';
 import ProfileHeader from '../../components/profile/ProfileHeader';
@@ -33,7 +35,6 @@ export default function DonorProfile({ user, onLogout }: DonorProfileProps) {
 
   const handleSaveProfile = async (updatedData: Partial<UserProfile>) => {
     if (!user.uid) return;
-
     try {
       setIsSaving(true);
       const userRef = doc(db, 'users', user.uid);
@@ -44,6 +45,28 @@ export default function DonorProfile({ user, onLogout }: DonorProfileProps) {
       throw error;
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async (password: string) => {
+    if (!auth.currentUser) throw new Error('Not logged in.');
+    try {
+      // Re-authenticate
+      if (password) {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email || '', password);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+      } else {
+        // Google sign-in
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(auth.currentUser, provider);
+      }
+      // Delete Firestore document
+      await deleteDoc(doc(db, 'users', user.uid));
+      // Delete Firebase Auth account
+      await deleteUser(auth.currentUser);
+      onLogout();
+    } catch (err: any) {
+      throw new Error(err.message || 'Re-authentication failed. Please try again.');
     }
   };
 
@@ -86,6 +109,7 @@ export default function DonorProfile({ user, onLogout }: DonorProfileProps) {
           <Settings
             user={user}
             onLogout={onLogout}
+            onDeleteAccount={handleDeleteAccount}
           />
         );
       default:

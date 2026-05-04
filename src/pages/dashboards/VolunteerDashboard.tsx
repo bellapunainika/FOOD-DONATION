@@ -6,7 +6,7 @@ import { FoodDonation } from '../../types';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap, Wifi, WifiOff } from 'lucide-react';
+import { Navigation, Check, PackageOpen, Truck, Heart, CheckCircle, AlertCircle, Zap, Radio } from 'lucide-react';
 
 const currentLocIcon = L.divIcon({
   className: 'custom-div-icon',
@@ -39,9 +39,9 @@ export default function VolunteerDashboard() {
   const [isAvailable, setIsAvailable] = useState<boolean>(userProfile?.isAvailable ?? false);
   const [isTogglingAvailability, setIsTogglingAvailability] = useState(false);
 
-  // Live tracking state
-  const [broadcastingIds, setBroadcastingIds] = useState<Set<string>>(new Set());
+  // Live tracking — auto-managed, no manual toggle
   const watchRefs = useRef<{ [id: string]: number }>({});
+  const broadcastingIds = useRef<Set<string>>(new Set());
 
   // Stop all watches on unmount
   useEffect(() => {
@@ -50,7 +50,8 @@ export default function VolunteerDashboard() {
   }, []);
 
   const startBroadcasting = (donationId: string) => {
-    if (!navigator.geolocation) { toast.error('Geolocation not supported.'); return; }
+    if (!navigator.geolocation) return;
+    if (broadcastingIds.current.has(donationId)) return; // already tracking
     const watchId = navigator.geolocation.watchPosition(
       async (pos) => {
         try {
@@ -60,12 +61,11 @@ export default function VolunteerDashboard() {
           });
         } catch (_) {}
       },
-      (err) => { toast.error('Location error: ' + err.message); stopBroadcasting(donationId); },
+      () => {}, // silent error — keep trying
       { enableHighAccuracy: true, maximumAge: 4000 }
     );
     watchRefs.current[donationId] = watchId;
-    setBroadcastingIds(prev => { const s = new Set(prev); s.add(donationId); return s; });
-    toast.success('🗣️ Live tracking started! Donor can see your location.');
+    broadcastingIds.current.add(donationId);
   };
 
   const stopBroadcasting = async (donationId: string) => {
@@ -73,7 +73,7 @@ export default function VolunteerDashboard() {
       navigator.geolocation.clearWatch(watchRefs.current[donationId]);
       delete watchRefs.current[donationId];
     }
-    setBroadcastingIds(prev => { const s = new Set(prev); s.delete(donationId); return s; });
+    broadcastingIds.current.delete(donationId);
     try { await updateDoc(doc(db, 'donations', donationId), { trackingActive: false }); } catch (_) {}
   };
 
@@ -214,8 +214,11 @@ export default function VolunteerDashboard() {
                   volunteerId: userProfile.uid,
                   volunteerName: volName,
                   volunteerEmail: userProfile.email || '',
-                  volunteerPhone: userProfile.phoneNumber || ''
+                  volunteerPhone: userProfile.phoneNumber || '',
+                  trackingActive: true
               });
+              // Auto-start tracking for the existing donation doc
+              startBroadcasting(acceptingDonation.id!);
           } else {
               const updates: any = { quantityInMeals: currentData.quantityInMeals - takingTotal };
               if (currentData.foodCategory === 'Both') {
@@ -232,6 +235,7 @@ export default function VolunteerDashboard() {
                   volunteerName: volName,
                   volunteerEmail: userProfile.email || '',
                   volunteerPhone: userProfile.phoneNumber || '',
+                  trackingActive: true,
                   createdAt: Date.now()
               };
               if (currentData.foodCategory === 'Both') {
@@ -240,9 +244,12 @@ export default function VolunteerDashboard() {
               }
               delete newDonation.id;
               
-              await addDoc(collection(db, 'donations'), newDonation);
+              const newDoc = await addDoc(collection(db, 'donations'), newDonation);
+              // Auto-start tracking for the new donation doc
+              startBroadcasting(newDoc.id);
           }
-          toast.success("🎯 Wow! You've accepted a delivery\n⏱️ Head to the pickup location now!");
+          // Auto-start tracking for existing donation
+          toast.success("🎯 Wow! You've accepted a delivery\n📡 Live tracking started automatically!");
           setAcceptingDonation(null);
       } catch(err: any) {
           toast.error("Failed: " + err.message);
@@ -271,16 +278,17 @@ export default function VolunteerDashboard() {
                 () => {}, { timeout: 5000 }
               );
             }
-            // Stop broadcasting
-            if (broadcastingIds.has(donationId)) stopBroadcasting(donationId);
+            // Auto-stop tracking on delivery
+            await stopBroadcasting(donationId);
             updates.trackingActive = false;
+            toast.success('🌟 Delivery completed! Proof code saved for the donor. 💪 Keep up the amazing work!');
+          } else {
+            // picked_up — ensure tracking is active
+            startBroadcasting(donationId);
+            updates.trackingActive = true;
+            toast.success('📦 Package picked up! Live tracking is broadcasting to the donor.');
           }
           await updateDoc(doc(db, 'donations', donationId), updates);
-          if(status === 'delivered') {
-              toast.success('🌟 Delivery completed! Proof code saved for the donor.💪 Keep up the amazing work!');
-          } else {
-              toast.success('📦 Package picked up! Start live tracking now.');
-          }
       } catch (err: any) {
           toast.error('Failed: ' + err.message);
       }
@@ -474,25 +482,15 @@ export default function VolunteerDashboard() {
                          </div>
                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{d.quantityInMeals} Meals</div>
 
-                         {/* Live Tracking Controls */}
-                         <div className="mb-3 p-3 bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-700 rounded-xl">
-                           <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2 flex items-center gap-1">
-                             <Navigation size={13}/> Live Location
-                           </p>
-                           {!broadcastingIds.has(d.id!) ? (
-                             <button
-                               onClick={() => d.id && startBroadcasting(d.id)}
-                               className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition"
-                             ><Wifi size={14}/> Start Live Tracking</button>
-                           ) : (
-                             <button
-                               onClick={() => d.id && stopBroadcasting(d.id)}
-                               className="w-full flex items-center justify-center gap-2 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg text-sm transition"
-                             ><WifiOff size={14}/> Stop Tracking</button>
-                           )}
-                           {broadcastingIds.has(d.id!) && (
-                             <p className="text-center text-xs text-indigo-500 dark:text-indigo-400 mt-1 animate-pulse">📡 Donor can see your live location</p>
-                           )}
+                         {/* Auto Live Tracking indicator */}
+                         <div className="mb-3 p-3 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-xl">
+                           <div className="flex items-center gap-2">
+                             <Radio size={14} className="text-green-500 animate-pulse" />
+                             <p className="text-xs font-bold text-green-700 dark:text-green-400 uppercase">
+                               Live tracking active
+                             </p>
+                           </div>
+                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Your location is automatically shared with the donor during delivery.</p>
                          </div>
 
                          <div className="space-y-2">
