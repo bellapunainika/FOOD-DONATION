@@ -12,7 +12,8 @@ export default function Onboarding() {
   const [agreed, setAgreed] = useState(false);
 
   // Form State
-  const [fullName, setFullName] = useState(userProfile?.fullName || userProfile?.organizationName || '');
+  const [fullName, setFullName] = useState(userProfile?.fullName || '');
+  const [organizationName, setOrganizationName] = useState(userProfile?.organizationName || '');
   const [phone, setPhone] = useState(userProfile?.phoneNumber || '');
   const [address, setAddress] = useState(userProfile?.location?.address || '');
   const [city, setCity] = useState(userProfile?.location?.city || '');
@@ -24,7 +25,8 @@ export default function Onboarding() {
   useEffect(() => {
     if (!userProfile) return;
 
-    setFullName(userProfile.fullName || userProfile.organizationName || '');
+    setFullName(userProfile.fullName || '');
+    setOrganizationName(userProfile.organizationName || '');
     setPhone(userProfile.phoneNumber || '');
     setAddress(userProfile.location?.address || '');
     setCity(userProfile.location?.city || '');
@@ -68,10 +70,10 @@ export default function Onboarding() {
 
       if (userProfile?.role === 'donor') {
         updateData.donorType = donorType;
-        updateData.organizationName = fullName;
+        updateData.organizationName = organizationName || fullName;
       } else if (userProfile?.role === 'organizations') {
         updateData.organizationsRegNumber = organizationsReg;
-        updateData.organizationName = fullName;
+        updateData.organizationName = organizationName;
       }
 
       await updateDoc(docRef, updateData);
@@ -102,7 +104,7 @@ export default function Onboarding() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {userProfile.role === 'volunteer' ? 'Full Name' : 'Organization / Full Name'}
+                Full Name
               </label>
               <input
                 type="text"
@@ -112,6 +114,20 @@ export default function Onboarding() {
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
+            {userProfile.role === 'organizations' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Organization Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-2 focus:ring-brand-500 outline-none"
+                  value={organizationName}
+                  onChange={(e) => setOrganizationName(e.target.value)}
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
               <input
