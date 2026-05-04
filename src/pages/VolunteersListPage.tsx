@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Navigation, Zap, Award, Clock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Navigation, Zap, Award, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Delivery {

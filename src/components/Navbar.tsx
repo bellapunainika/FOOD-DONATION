@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Heart, LogOut, User as UserIcon, ChevronDown } from 'lucide-react';
+import { Heart, User as UserIcon, ChevronDown } from 'lucide-react';
 import DarkModeToggle from './ui/DarkModeToggle';
 
 export default function Navbar() {

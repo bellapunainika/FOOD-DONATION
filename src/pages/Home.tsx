@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import L from 'leaflet';
 // @ts-ignore
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Users, Heart, Navigation } from 'lucide-react';
+import { MapPin, Heart, Navigation } from 'lucide-react';
 
 // Fix Leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
