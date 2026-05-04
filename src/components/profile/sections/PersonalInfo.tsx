@@ -128,13 +128,11 @@ export default function PersonalInfo({ user, onSave, isLoading = false }: Person
       </div>
 
       <div className="space-y-5">
-        {(user.role === 'donor' || user.role === 'volunteer') && (
-          <div>
-            <label className={labelCls}>Full Name</label>
-            <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={inputCls} placeholder="Your full name" />
-          </div>
-        )}
-        {user.role === 'organizations' && (
+        <div>
+          <label className={labelCls}>Full Name</label>
+          <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={inputCls} placeholder="Your full name" />
+        </div>
+        {(user.role === 'organizations' || user.role === 'donor') && (
           <div>
             <label className={labelCls}>Organization Name</label>
             <input type="text" name="organizationName" value={formData.organizationName} onChange={handleChange} className={inputCls} placeholder="Organization name" />
