@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { collection, query, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserProfile } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,31 +34,42 @@ export default function Home() {
   const [users, setUsers] = useState<UserProfile[]>([]);
 
   useEffect(() => {
-    const qDonations = query(collection(db, 'donations'), where('status', '==', 'delivered'));
-    const unsubDonations = onSnapshot(qDonations, (snapshot) => {
-      let meals = 0;
-      snapshot.forEach((doc) => { meals += doc.data().quantityInMeals || 0; });
-      setTotalMeals(meals);
-    });
+    let cancelled = false;
 
-    const unsubUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      const activeUsers: UserProfile[] = [];
-      snapshot.forEach((doc) => {
-        const u = doc.data() as UserProfile;
-        if (u.location?.lat && u.location?.lng) activeUsers.push(u);
-      });
-      setUsers(
-        activeUsers.length > 0
-          ? activeUsers
-          : [
-              { uid: '1', email: '', role: 'donor', fullName: 'Grand Restaurant', location: { lat: 28.6139, lng: 77.209, address: 'Delhi' }, createdAt: 0 },
-              { uid: '2', email: '', role: 'organizations', fullName: 'Hope Foundation', location: { lat: 28.6239, lng: 77.219, address: 'Delhi' }, createdAt: 0 },
-              { uid: '3', email: '', role: 'volunteer', fullName: 'John Doe', location: { lat: 28.6039, lng: 77.199, address: 'Delhi' }, createdAt: 0 },
-            ]
-      );
-    });
+    const fetchData = async () => {
+      try {
+        // One-time fetch for delivered meal count
+        const qDonations = query(collection(db, 'donations'), where('status', '==', 'delivered'));
+        const donSnap = await getDocs(qDonations);
+        let meals = 0;
+        donSnap.forEach((doc) => { meals += doc.data().quantityInMeals || 0; });
+        if (!cancelled) setTotalMeals(meals);
 
-    return () => { unsubDonations(); unsubUsers(); };
+        // One-time fetch for user map pins
+        const userSnap = await getDocs(collection(db, 'users'));
+        const activeUsers: UserProfile[] = [];
+        userSnap.forEach((doc) => {
+          const u = doc.data() as UserProfile;
+          if (u.location?.lat && u.location?.lng) activeUsers.push(u);
+        });
+        if (!cancelled) {
+          setUsers(
+            activeUsers.length > 0
+              ? activeUsers
+              : [
+                  { uid: '1', email: '', role: 'donor', fullName: 'Grand Restaurant', location: { lat: 28.6139, lng: 77.209, address: 'Delhi' }, createdAt: 0 },
+                  { uid: '2', email: '', role: 'organizations', fullName: 'Hope Foundation', location: { lat: 28.6239, lng: 77.219, address: 'Delhi' }, createdAt: 0 },
+                  { uid: '3', email: '', role: 'volunteer', fullName: 'John Doe', location: { lat: 28.6039, lng: 77.199, address: 'Delhi' }, createdAt: 0 },
+                ]
+          );
+        }
+      } catch (err) {
+        console.error('Home fetch error:', err);
+      }
+    };
+
+    fetchData();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
