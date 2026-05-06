@@ -59,7 +59,16 @@ export default function Navbar() {
                   Sign up
                 </Link>
               </>
+            ) : !userProfile ? (
+              // Authenticated but onboarding not complete — show only a logout escape hatch
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              >
+                Cancel &amp; Sign out
+              </button>
             ) : (
+              // Fully registered user with a complete profile
               <div className="flex items-center gap-4">
                 <Link 
                   to="/dashboard" 
@@ -73,10 +82,10 @@ export default function Navbar() {
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col items-end">
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors duration-300">
-                      {userProfile?.fullName || userProfile?.organizationName || currentUser.email}
+                      {userProfile.fullName || userProfile.organizationName || currentUser.email}
                     </span>
                     <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full font-medium uppercase tracking-wider transition-colors duration-300">
-                      {userProfile?.role || 'User'}
+                      {userProfile.role}
                     </span>
                   </div>
                   <div className="relative" ref={menuRef}>
