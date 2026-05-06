@@ -18,13 +18,36 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-const customMarker = (color: string) =>
-  L.divIcon({
-    className: 'custom-div-icon',
-    html: `<div style="background-color:${color};width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+const ROLE_COLORS: Record<string, string> = {
+  donor: '#3b82f6',        // Blue
+  organizations: '#22c55e', // Green
+  volunteer: '#f59e0b',    // Amber
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  donor: 'Donor',
+  organizations: 'Organization',
+  volunteer: 'Volunteer',
+};
+
+const customMarker = (role: string) => {
+  const color = ROLE_COLORS[role] || '#888';
+  const size = role === 'organizations' ? 30 : 24;
+  return L.divIcon({
+    className: '',
+    html: `
+      <div style="
+        background-color:${color};
+        width:${size}px;height:${size}px;
+        border-radius:50%;
+        border:3px solid white;
+        box-shadow:0 2px 8px rgba(0,0,0,0.35);
+        display:flex;align-items:center;justify-content:center;
+      "></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
+};
 
 export default function Home() {
   const { userProfile } = useAuth();
@@ -32,39 +55,35 @@ export default function Home() {
   const [totalMeals, setTotalMeals] = useState(0);
   const [displayedMeals, setDisplayedMeals] = useState(0);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [mapLoading, setMapLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchData = async () => {
       try {
-        // One-time fetch for delivered meal count
+        // One-time fetch for delivered meal count (public rule)
         const qDonations = query(collection(db, 'donations'), where('status', '==', 'delivered'));
         const donSnap = await getDocs(qDonations);
         let meals = 0;
         donSnap.forEach((doc) => { meals += doc.data().quantityInMeals || 0; });
         if (!cancelled) setTotalMeals(meals);
 
-        // One-time fetch for user map pins
+        // One-time fetch for ALL users — publicly readable now
         const userSnap = await getDocs(collection(db, 'users'));
-        const activeUsers: UserProfile[] = [];
+        const allUsers: UserProfile[] = [];
         userSnap.forEach((doc) => {
           const u = doc.data() as UserProfile;
-          if (u.location?.lat && u.location?.lng) activeUsers.push(u);
+          // Only show on map if they have a valid location
+          if (u.location?.lat && u.location?.lng) allUsers.push(u);
         });
         if (!cancelled) {
-          setUsers(
-            activeUsers.length > 0
-              ? activeUsers
-              : [
-                  { uid: '1', email: '', role: 'donor', fullName: 'Grand Restaurant', location: { lat: 28.6139, lng: 77.209, address: 'Delhi' }, createdAt: 0 },
-                  { uid: '2', email: '', role: 'organizations', fullName: 'Hope Foundation', location: { lat: 28.6239, lng: 77.219, address: 'Delhi' }, createdAt: 0 },
-                  { uid: '3', email: '', role: 'volunteer', fullName: 'John Doe', location: { lat: 28.6039, lng: 77.199, address: 'Delhi' }, createdAt: 0 },
-                ]
-          );
+          setUsers(allUsers);
+          setMapLoading(false);
         }
       } catch (err) {
         console.error('Home fetch error:', err);
+        if (!cancelled) setMapLoading(false);
       }
     };
 
@@ -85,12 +104,20 @@ export default function Home() {
     }
   }, [totalMeals]);
 
+  const donorCount = users.filter(u => u.role === 'donor').length;
+  const orgCount   = users.filter(u => u.role === 'organizations').length;
+  const volCount   = users.filter(u => u.role === 'volunteer').length;
+
+  // Map center: use first real user location, else default to Delhi
+  const mapCenter: [number, number] = users.length > 0
+    ? [users[0].location!.lat, users[0].location!.lng]
+    : [28.6139, 77.209];
+
   return (
     <div className="flex flex-col">
 
       {/* ── Hero ── */}
       <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 dark:from-gray-900 dark:to-gray-800 text-gray-300 dark:text-gray-300 py-32 overflow-hidden">
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center z-10">
           <Heart className="text-brand-500 w-16 h-16 mb-6" />
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-green-400 dark:text-green-400">
@@ -188,10 +215,10 @@ export default function Home() {
             </div>
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
                <div className="absolute inset-0 bg-brand-600 mix-blend-multiply opacity-20 z-10 transition-opacity group-hover:opacity-10"></div>
-               <img 
-                 src="/campaign_poster.png" 
-                 alt="Food Donation Campaign" 
-                 className="w-full h-full object-cover object-center min-h-[450px] transition-transform duration-700 group-hover:scale-105" 
+               <img
+                 src="/campaign_poster.png"
+                 alt="Food Donation Campaign"
+                 className="w-full h-full object-cover object-center min-h-[450px] transition-transform duration-700 group-hover:scale-105"
                />
             </div>
           </div>
@@ -201,40 +228,115 @@ export default function Home() {
       {/* ── Network Map ── */}
       <section className="flex-grow py-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 mb-4">
               Our Growing Network
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              See where our donors, organizations, and volunteers are actively making a difference in real-time.
+              See where our donors, organizations, and volunteers are making a difference.
+              Everyone is visible — join us and appear on the map!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8">
-            {/* Map */}
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-3xl shadow-xl h-[500px] transition-colors duration-300 border border-gray-200 dark:border-gray-700">
-              <div className="map-container rounded-2xl">
-                <MapContainer center={[28.6139, 77.209]} zoom={11} scrollWheelZoom={false}>
-                  <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                  />
-                  {users.map((u) => (
-                    <Marker
-                      key={u.uid}
-                      position={[u.location!.lat, u.location!.lng]}
-                      icon={customMarker(
-                        u.role === 'donor' ? '#3b82f6' : u.role === 'organizations' ? '#22c55e' : '#eab308'
-                      )}
-                    >
-                      <Popup>
-                        <div className="font-bold">{u.fullName || u.organizationName}</div>
-                        <div className="text-xs uppercase text-gray-500">{u.role}</div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
+          {/* Role count stats */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            {[
+              { label: 'Donors',        count: donorCount, color: 'bg-blue-500',  text: 'text-blue-600 dark:text-blue-400',  border: 'border-blue-200 dark:border-blue-800'  },
+              { label: 'Organizations', count: orgCount,   color: 'bg-green-500', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800' },
+              { label: 'Volunteers',    count: volCount,   color: 'bg-amber-400', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
+            ].map(({ label, count, color, text, border }) => (
+              <div
+                key={label}
+                className={`flex items-center gap-3 bg-white dark:bg-gray-800 border ${border} rounded-2xl px-6 py-3 shadow-sm`}
+              >
+                <span className={`w-3 h-3 rounded-full ${color} flex-shrink-0`} />
+                <span className={`font-black text-xl ${text}`}>{count}</span>
+                <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">{label}</span>
               </div>
+            ))}
+          </div>
+
+          {/* Map + Legend */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+            {/* Legend bar */}
+            <div className="flex flex-wrap items-center gap-6 px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Map Legend</p>
+              <div className="flex items-center gap-2">
+                <span style={{ background: ROLE_COLORS.donor }} className="w-4 h-4 rounded-full border-2 border-white shadow" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Donor (Restaurant / Event)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span style={{ background: ROLE_COLORS.organizations }} className="w-5 h-5 rounded-full border-2 border-white shadow" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Organization (NGO)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span style={{ background: ROLE_COLORS.volunteer }} className="w-4 h-4 rounded-full border-2 border-white shadow" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Volunteer (Delivery Partner)</span>
+              </div>
+              {!userProfile && (
+                <Link
+                  to="/register"
+                  className="ml-auto text-xs font-bold text-brand-600 hover:text-brand-500 underline underline-offset-2 transition-colors"
+                >
+                  + Join &amp; appear on this map
+                </Link>
+              )}
+            </div>
+
+            {/* Map */}
+            <div className="h-[520px] relative">
+              {mapLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-brand-600 border-t-transparent" />
+                </div>
+              )}
+              <MapContainer
+                center={mapCenter}
+                zoom={users.length > 0 ? 11 : 5}
+                scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                />
+                {users.map((u) => (
+                  <Marker
+                    key={u.uid}
+                    position={[u.location!.lat, u.location!.lng]}
+                    icon={customMarker(u.role)}
+                  >
+                    <Popup>
+                      <div style={{ minWidth: 140 }}>
+                        <div
+                          style={{ background: ROLE_COLORS[u.role] || '#888' }}
+                          className="text-white text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block"
+                        >
+                          {ROLE_LABELS[u.role] || u.role}
+                        </div>
+                        <div className="font-bold text-gray-900 text-sm leading-tight">
+                          {u.fullName || u.organizationName || 'Anonymous'}
+                        </div>
+                        {u.location?.address && (
+                          <div className="text-xs text-gray-500 mt-1 flex items-start gap-1">
+                            <span>📍</span>
+                            <span>{u.location.address}</span>
+                          </div>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+
+            {/* Footer note */}
+            <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+                Showing {users.length} registered user{users.length !== 1 ? 's' : ''} with location data
+                {users.length === 0 && ' · Be the first to join!'}
+              </p>
             </div>
           </div>
         </div>
